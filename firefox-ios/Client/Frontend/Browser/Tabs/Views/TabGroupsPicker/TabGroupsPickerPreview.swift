@@ -41,6 +41,8 @@ private struct TabGroupsPickerPreviewHost: View {
             onAction: handle
         )
         .padding(24)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 38))
+        .shadow(color: .black.opacity(0.18), radius: 35, y: 15)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(TabGroupsPickerViewModel.Colors.system.background)
     }

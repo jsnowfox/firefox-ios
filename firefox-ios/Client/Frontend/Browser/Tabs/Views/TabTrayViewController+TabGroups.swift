@@ -14,6 +14,7 @@ extension TabTrayViewController {
 
     func setupTabGroupsUI() {
         guard TabGroupsFeatureFlag.isEnabled, let controller = tabGroupsController else { return }
+        guard tabGroupsTopHost == nil else { return }
         controller.onChange = { [weak self] _ in
             guard let self else { return }
             self.normalTabPanel?.tabDisplayView.refreshGroupFilter()
@@ -148,7 +149,7 @@ extension TabTrayViewController {
         return AnyView(TabGroupsPickerView(viewModel: model) { [weak self] action in
             self?.handleTabGroupsPickerAction(action)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color(uiColor: .systemGroupedBackground)))
     }
 

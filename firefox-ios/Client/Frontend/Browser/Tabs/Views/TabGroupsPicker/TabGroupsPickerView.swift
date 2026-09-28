@@ -7,7 +7,6 @@ import SwiftUI
 struct TabGroupsPickerView: View {
     private enum UX {
         static let width: CGFloat = 377
-        static let sheetRadius: CGFloat = 38
         static let cardRadius: CGFloat = 26
         static let horizontalPadding: CGFloat = 16
         static let rowHorizontalPadding: CGFloat = 24

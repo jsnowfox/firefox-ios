@@ -62,6 +62,9 @@ final class TabTrayCoordinator: BaseCoordinator,
                       normalPanel.panelType == .tabs else { continue }
                 normalPanel.tabGroupsController = controller
             }
+            if tabTrayViewController.isViewLoaded {
+                tabTrayViewController.setupTabGroupsUI()
+            }
         }
         tabTrayViewController.delegate = self
         tabTrayViewController.navigationHandler = self
