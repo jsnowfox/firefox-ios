@@ -10,11 +10,13 @@ struct TabGroupsContextMenuViewModel: Equatable {
     let closeTabsTitle: String
     let ungroupTitle: String
     let tabSettingsTitle: String
+    var sortsByTitle = false
 }
 
 enum TabGroupsContextMenuAction: Equatable {
     case selectTabs
-    case arrangeTabs
+    case arrangeTabsByOriginalOrder
+    case arrangeTabsByTitle
     case customizeGroup
     case closeTabs
     case ungroup

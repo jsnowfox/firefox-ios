@@ -5,7 +5,6 @@
 import SwiftUI
 
 private struct TabGroupsContextMenuPreviewHost: View {
-    @State private var isPresented = true
     let showsGroupActions: Bool
 
     var body: some View {
@@ -22,37 +21,25 @@ private struct TabGroupsContextMenuPreviewHost: View {
             showsGroupActions: showsGroupActions,
             selectTabsTitle: "Select Tabs",
             arrangeTabsTitle: "Arrange Tabs By",
-            customizeGroupTitle: "Customize Group Details",
+            customizeGroupTitle: "Customize Group",
             closeTabsTitle: "Close Tabs",
             ungroupTitle: "Ungroup",
             tabSettingsTitle: "Tab Settings"
         )
 
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 0) {
-                TabGroupsTrayTopBar(viewModel: barModel) { action in
-                    if action == .openMoreMenu {
-                        isPresented.toggle()
-                    }
-                }
-
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(red: 0.13, green: 0.04, blue: 0.28))
-                    .frame(width: 165, height: 225)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-
-                TabGroupsTrayBottomBar(viewModel: barModel) { _ in }
+        VStack(spacing: 0) {
+            TabGroupsTrayTopBar(viewModel: barModel, onAction: { _ in }) {
+                TabGroupsContextMenuView(viewModel: menuModel) { _ in }
             }
 
-            if isPresented {
-                TabGroupsContextMenuView(viewModel: menuModel) { _ in
-                    isPresented = false
-                }
-                .padding(.top, 53)
-                .padding(.trailing, 20)
-            }
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color(red: 0.13, green: 0.04, blue: 0.28))
+                .frame(width: 165, height: 225)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+
+            TabGroupsTrayBottomBar(viewModel: barModel) { _ in }
         }
         .frame(width: 393, height: 700)
         .background(Color(uiColor: .systemGroupedBackground))

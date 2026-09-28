@@ -5,96 +5,88 @@
 import SwiftUI
 
 struct TabGroupsContextMenuView: View {
-    private enum UX {
-        static let width: CGFloat = 232
-        static let rowHeight: CGFloat = 42
-        static let radius: CGFloat = 18
-    }
-
     let viewModel: TabGroupsContextMenuViewModel
     let onAction: (TabGroupsContextMenuAction) -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            menuRow(viewModel.selectTabsTitle,
-                    symbol: "checkmark.rectangle.stack",
-                    identifier: "selectTabs",
-                    action: .selectTabs)
-            menuRow(viewModel.arrangeTabsTitle,
-                    symbol: "square.grid.2x2",
-                    hasSubmenu: true,
-                    identifier: "arrangeTabs",
-                    action: .arrangeTabs)
-
-            if viewModel.showsGroupActions {
-                menuRow(viewModel.customizeGroupTitle,
-                        symbol: "square.and.pencil",
-                        identifier: "customizeGroup",
-                        action: .customizeGroup)
+        Menu {
+            Button {
+                onAction(.selectTabs)
+            } label: {
+                Label(viewModel.selectTabsTitle, systemImage: "checkmark.rectangle.stack")
             }
+            .accessibilityIdentifier("tabGroupsContextMenu.selectTabs")
 
-            Divider().padding(.horizontal, 12)
-
-            menuRow(viewModel.closeTabsTitle,
-                    symbol: "xmark.square",
-                    hasSubmenu: true,
-                    isDestructive: true,
-                    identifier: "closeTabs",
-                    action: .closeTabs)
-
-            if viewModel.showsGroupActions {
-                menuRow(viewModel.ungroupTitle,
-                        symbol: "square.on.square.dashed",
-                        isDestructive: true,
-                        identifier: "ungroup",
-                        action: .ungroup)
-            }
-
-            Divider().padding(.horizontal, 12)
-
-            menuRow(viewModel.tabSettingsTitle,
-                    symbol: "gearshape",
-                    identifier: "tabSettings",
-                    action: .tabSettings)
-        }
-        .padding(.vertical, 6)
-        .frame(width: UX.width)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: UX.radius))
-        .shadow(color: .black.opacity(0.2), radius: 22, y: 10)
-        .accessibilityIdentifier("tabGroupsContextMenu")
-    }
-
-    private func menuRow(_ title: String,
-                         symbol: String,
-                         hasSubmenu: Bool = false,
-                         isDestructive: Bool = false,
-                         identifier: String,
-                         action: TabGroupsContextMenuAction) -> some View {
-        Button {
-            onAction(action)
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: symbol)
-                    .font(.system(size: 15, weight: .regular))
-                    .frame(width: 19)
-
-                Text(title)
-                    .font(.system(size: 15))
-                    .lineLimit(1)
-
-                Spacer(minLength: 4)
-
-                if hasSubmenu {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
+            Menu {
+                Button {
+                    onAction(.arrangeTabsByOriginalOrder)
+                } label: {
+                    Label("Original Order", systemImage: viewModel.sortsByTitle ? "line.3.horizontal" : "checkmark")
                 }
+                Button {
+                    onAction(.arrangeTabsByTitle)
+                } label: {
+                    Label("Title", systemImage: viewModel.sortsByTitle ? "checkmark" : "textformat")
+                }
+            } label: {
+                Label(viewModel.arrangeTabsTitle, systemImage: "square.grid.2x2")
             }
-            .foregroundStyle(isDestructive ? Color.red : Color(uiColor: .label))
-            .padding(.horizontal, 14)
-            .frame(height: UX.rowHeight)
-            .contentShape(Rectangle())
+            .accessibilityIdentifier("tabGroupsContextMenu.arrangeTabs")
+
+            if viewModel.showsGroupActions {
+                Button {
+                    onAction(.customizeGroup)
+                } label: {
+                    Label(viewModel.customizeGroupTitle, systemImage: "square.and.pencil")
+                }
+                .accessibilityIdentifier("tabGroupsContextMenu.customizeGroup")
+            }
+
+            Divider()
+
+            Button(role: .destructive) {
+                onAction(.closeTabs)
+            } label: {
+                Label(viewModel.closeTabsTitle, systemImage: "xmark.square")
+            }
+            .accessibilityIdentifier("tabGroupsContextMenu.closeTabs")
+
+            if viewModel.showsGroupActions {
+                Button(role: .destructive) {
+                    onAction(.ungroup)
+                } label: {
+                    Label(viewModel.ungroupTitle, systemImage: "square.on.square.dashed")
+                }
+                .accessibilityIdentifier("tabGroupsContextMenu.ungroup")
+            }
+
+            Divider()
+
+            Button {
+                onAction(.tabSettings)
+            } label: {
+                Label(viewModel.tabSettingsTitle, systemImage: "gearshape")
+            }
+            .accessibilityIdentifier("tabGroupsContextMenu.tabSettings")
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 19, weight: .semibold))
+                .foregroundStyle(Color(uiColor: .label))
+                .frame(width: 40, height: 40)
+                .glassMenuLabel()
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("tabGroupsContextMenu.\(identifier)")
+        .accessibilityLabel("More tab options")
+        .accessibilityIdentifier("tabGroupsTray.more")
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func glassMenuLabel() -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            background(.regularMaterial, in: Circle())
+        }
     }
 }
