@@ -2450,6 +2450,8 @@
 		486D128DE36B48B28BDCF92D /* TabGroupsContextMenuPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */; };
 		D8F4DDB9254C4BCD84DAFDAC /* TabGroupsToolbarButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */; };
 		B1A264EA33A544508391853D /* TabGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A0A21D19D7480BA70F8445 /* TabGroup.swift */; };
+		C38C7F7C1F1A42D8937CCF21 /* TabGroupsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38C7F7C1F1A42D8937CCF22 /* TabGroupsController.swift */; };
+		C38C7F7C1F1A42D8937CCF23 /* TabGroupsControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C38C7F7C1F1A42D8937CCF24 /* TabGroupsControllerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -12511,6 +12513,8 @@
 		6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuPreview.swift; sourceTree = "<group>"; };
 		FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsToolbarButtonViewModel.swift; sourceTree = "<group>"; };
 		F1A0A21D19D7480BA70F8445 /* TabGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroup.swift; sourceTree = "<group>"; };
+		C38C7F7C1F1A42D8937CCF22 /* TabGroupsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsController.swift; sourceTree = "<group>"; };
+		C38C7F7C1F1A42D8937CCF24 /* TabGroupsControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsControllerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -14746,6 +14750,7 @@
 				8A9BA6BC2F7C4CDF00D892C4 /* RemoteTabCreator.swift */,
 				D3A994961A3686BD008AD1AC /* Tab.swift */,
 				F1A0A21D19D7480BA70F8445 /* TabGroup.swift */,
+				C38C7F7C1F1A42D8937CCF22 /* TabGroupsController.swift */,
 				C82CDD45233E8996002E2743 /* Tab+ChangeUserAgent.swift */,
 				61C92A002DEF39F9004ACF49 /* TabConfigurationProvider.swift */,
 				8A0A7C2C2F61E3E400D00820 /* TabContentScriptManager.swift */,
@@ -15408,6 +15413,7 @@
 				8AFC1B782FAAAA3D0070CA11 /* TabManagerPrivacyModeTests.swift */,
 				8AFC09542FA54A240070CA11 /* TabManagerRemoveTabTests.swift */,
 				8A3FD28F2FABB9BA001F5DE9 /* TabManagerReorderTabsTests.swift */,
+				C38C7F7C1F1A42D8937CCF24 /* TabGroupsControllerTests.swift */,
 				8AE65C042FE219A500CBBE66 /* TabManagerRestoreScreenshotTests.swift */,
 				8AFC09552FA54A240070CA11 /* TabManagerRestoreTabsTests.swift */,
 				5A475E8929DB87F2009C13FD /* TabManagerTests.swift */,
@@ -21004,6 +21010,7 @@
 				C869912E28917688007ACC5C /* WallpaperDataService.swift in Sources */,
 				5A8017E029CE15D90047120D /* TabManagerImplementation.swift in Sources */,
 				B1A264EA33A544508391853D /* TabGroup.swift in Sources */,
+				C38C7F7C1F1A42D8937CCF21 /* TabGroupsController.swift in Sources */,
 				8AABBD012A001ADF0089941E /* ApplicationHelper.swift in Sources */,
 				E633E2DA1C21EAF8001FFF6C /* PasswordDetailViewController.swift in Sources */,
 				2142B12C2D9F1284003AA82F /* ZoomPageManager.swift in Sources */,
@@ -21570,6 +21577,7 @@
 				8A3FD2902FABB9BA001F5DE9 /* TabManagerClearHistoryTests.swift in Sources */,
 				8A3FD2912FABB9BA001F5DE9 /* TabManagerGetTabTests.swift in Sources */,
 				8A3FD2922FABB9BA001F5DE9 /* TabManagerReorderTabsTests.swift in Sources */,
+				C38C7F7C1F1A42D8937CCF23 /* TabGroupsControllerTests.swift in Sources */,
 				E169C6E82979CA0E0017B8D7 /* URLMailTests.swift in Sources */,
 				8A7A26E129D4785900EA76F1 /* MockRouter.swift in Sources */,
 				965C3C96293431FC006499ED /* MockLaunchSessionProvider.swift in Sources */,
