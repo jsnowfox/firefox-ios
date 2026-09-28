@@ -2448,6 +2448,9 @@
 		A4E7FFB2CEDA430BBE1DBE72 /* TabGroupsContextMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 968AAD477776464B81B4E109 /* TabGroupsContextMenuView.swift */; };
 		387C4224FD39487B96575230 /* TabGroupsContextMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C061FCA5CEA3442DB3EC23D3 /* TabGroupsContextMenuViewModel.swift */; };
 		486D128DE36B48B28BDCF92D /* TabGroupsContextMenuPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */; };
+		5DBDB9294FBB4D27846759AD /* TabGroupsToolbarButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ED94AD9FB514AB2B9835283 /* TabGroupsToolbarButtonView.swift */; };
+		D8F4DDB9254C4BCD84DAFDAC /* TabGroupsToolbarButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */; };
+		A0DBF8BE82324B549ABB3707 /* TabGroupsToolbarButtonPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1974E12779634C27A699BD30 /* TabGroupsToolbarButtonPreview.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -12507,6 +12510,9 @@
 		968AAD477776464B81B4E109 /* TabGroupsContextMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuView.swift; sourceTree = "<group>"; };
 		C061FCA5CEA3442DB3EC23D3 /* TabGroupsContextMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuViewModel.swift; sourceTree = "<group>"; };
 		6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuPreview.swift; sourceTree = "<group>"; };
+		8ED94AD9FB514AB2B9835283 /* TabGroupsToolbarButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsToolbarButtonView.swift; sourceTree = "<group>"; };
+		FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsToolbarButtonViewModel.swift; sourceTree = "<group>"; };
+		1974E12779634C27A699BD30 /* TabGroupsToolbarButtonPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsToolbarButtonPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -17033,6 +17039,7 @@
 				E19F86022D6F4B49007453A7 /* ToolbarLayoutStyle.swift */,
 				E1B9A2C12CAD91EF00F6A0E9 /* ToolbarTelemetry.swift */,
 				BD865A5C2F55C6E100BE5AE0 /* TabTrayButtonStyle.swift */,
+				892B4D726A8E4F99A4B4BC67 /* TabGroupsButton */,
 			);
 			path = Toolbars;
 			sourceTree = "<group>";
@@ -18119,6 +18126,16 @@
 				6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */,
 			);
 			path = TabGroupsContextMenu;
+			sourceTree = "<group>";
+		};
+		892B4D726A8E4F99A4B4BC67 /* TabGroupsButton */ = {
+			isa = PBXGroup;
+			children = (
+				8ED94AD9FB514AB2B9835283 /* TabGroupsToolbarButtonView.swift */,
+				FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */,
+				1974E12779634C27A699BD30 /* TabGroupsToolbarButtonPreview.swift */,
+			);
+			path = TabGroupsButton;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -20057,6 +20074,9 @@
 				CB4B79A09A5A4F708607D6C0 /* TabGroupsPickerView.swift in Sources */,
 				69D292EF051E4389AF6ECF3C /* TabGroupsPickerViewModel.swift in Sources */,
 				580705F9591F4835A43EA1A4 /* TabGroupsPickerPreview.swift in Sources */,
+				5DBDB9294FBB4D27846759AD /* TabGroupsToolbarButtonView.swift in Sources */,
+				D8F4DDB9254C4BCD84DAFDAC /* TabGroupsToolbarButtonViewModel.swift in Sources */,
+				A0DBF8BE82324B549ABB3707 /* TabGroupsToolbarButtonPreview.swift in Sources */,
 				A4E7FFB2CEDA430BBE1DBE72 /* TabGroupsContextMenuView.swift in Sources */,
 				387C4224FD39487B96575230 /* TabGroupsContextMenuViewModel.swift in Sources */,
 				486D128DE36B48B28BDCF92D /* TabGroupsContextMenuPreview.swift in Sources */,
