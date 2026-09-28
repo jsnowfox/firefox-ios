@@ -2449,6 +2449,7 @@
 		387C4224FD39487B96575230 /* TabGroupsContextMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C061FCA5CEA3442DB3EC23D3 /* TabGroupsContextMenuViewModel.swift */; };
 		486D128DE36B48B28BDCF92D /* TabGroupsContextMenuPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */; };
 		D8F4DDB9254C4BCD84DAFDAC /* TabGroupsToolbarButtonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */; };
+		B1A264EA33A544508391853D /* TabGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A0A21D19D7480BA70F8445 /* TabGroup.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -12509,6 +12510,7 @@
 		C061FCA5CEA3442DB3EC23D3 /* TabGroupsContextMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuViewModel.swift; sourceTree = "<group>"; };
 		6EB825FB243D4BF98C576BAF /* TabGroupsContextMenuPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsContextMenuPreview.swift; sourceTree = "<group>"; };
 		FE5195CBE18A41A3A92E57B1 /* TabGroupsToolbarButtonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsToolbarButtonViewModel.swift; sourceTree = "<group>"; };
+		F1A0A21D19D7480BA70F8445 /* TabGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroup.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -14743,6 +14745,7 @@
 				39F819C51FD70F5D009E31E4 /* GlobalTabEventHandlers.swift */,
 				8A9BA6BC2F7C4CDF00D892C4 /* RemoteTabCreator.swift */,
 				D3A994961A3686BD008AD1AC /* Tab.swift */,
+				F1A0A21D19D7480BA70F8445 /* TabGroup.swift */,
 				C82CDD45233E8996002E2743 /* Tab+ChangeUserAgent.swift */,
 				61C92A002DEF39F9004ACF49 /* TabConfigurationProvider.swift */,
 				8A0A7C2C2F61E3E400D00820 /* TabContentScriptManager.swift */,
@@ -21000,6 +21003,7 @@
 				ABEF80D52A254185003F52C4 /* CreditCardBottomSheetFooterView.swift in Sources */,
 				C869912E28917688007ACC5C /* WallpaperDataService.swift in Sources */,
 				5A8017E029CE15D90047120D /* TabManagerImplementation.swift in Sources */,
+				B1A264EA33A544508391853D /* TabGroup.swift in Sources */,
 				8AABBD012A001ADF0089941E /* ApplicationHelper.swift in Sources */,
 				E633E2DA1C21EAF8001FFF6C /* PasswordDetailViewController.swift in Sources */,
 				2142B12C2D9F1284003AA82F /* ZoomPageManager.swift in Sources */,
