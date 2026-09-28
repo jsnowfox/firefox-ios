@@ -20,8 +20,9 @@ struct TabGroupsTrayTopBar: View {
                         .font(.system(size: 19, weight: .semibold))
                         .foregroundStyle(Color(uiColor: .label))
                         .frame(width: 40, height: 40)
-                        .background(.regularMaterial, in: Circle())
+                        .tabGroupsGlass(in: Circle())
                 }
+                .buttonStyle(.plain)
                 .accessibilityLabel("More tab options")
                 .accessibilityIdentifier("tabGroupsTray.more")
             }
@@ -30,31 +31,34 @@ struct TabGroupsTrayTopBar: View {
                 onAction(.openDestinationPicker)
             } label: {
                 HStack(spacing: 7) {
-                    Image(systemName: "square.grid.2x2.fill")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(viewModel.isGroupSelected ? groupTint : Color(uiColor: .label))
+                    if let emoji = viewModel.groupEmoji, viewModel.isGroupSelected {
+                        Text(emoji)
+                            .font(.system(size: 16))
+                    } else {
+                        Image(systemName: "square.grid.2x2.fill")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color(uiColor: .label))
+                    }
 
                     Text(viewModel.destinationTitle)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Color(uiColor: .label))
 
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .secondaryLabel))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color(uiColor: .label))
                 }
                 .padding(.horizontal, 14)
                 .frame(height: 36)
-                .background(.regularMaterial, in: Capsule())
+                .tabGroupsGlass(in: Capsule(), tint: viewModel.isGroupSelected ? viewModel.groupColor : nil)
             }
+            .buttonStyle(.plain)
             .accessibilityIdentifier("tabGroupsTray.destination")
         }
         .padding(.horizontal, 20)
         .frame(height: 48)
     }
 
-    private var groupTint: Color {
-        Color(red: 0.96, green: 0.38, blue: 0.16)
-    }
 }
 
 struct TabGroupsTrayBottomBar: View {
@@ -69,8 +73,9 @@ struct TabGroupsTrayBottomBar: View {
                 Image(systemName: "plus")
                     .font(.system(size: 18, weight: .medium))
                     .frame(width: 40, height: 40)
-                    .background(.regularMaterial, in: Circle())
+                    .tabGroupsGlass(in: Circle())
             }
+            .buttonStyle(.plain)
             .accessibilityLabel("New tab")
             .accessibilityIdentifier("tabGroupsTray.addTab")
 
@@ -82,7 +87,7 @@ struct TabGroupsTrayBottomBar: View {
                 panelButton(viewModel.syncedTitle, panel: .syncedTabs)
             }
             .padding(3)
-            .background(.regularMaterial, in: Capsule())
+            .tabGroupsGlass(in: Capsule())
 
             Spacer(minLength: 0)
 
@@ -93,8 +98,9 @@ struct TabGroupsTrayBottomBar: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color(uiColor: .systemBackground))
                     .frame(width: 40, height: 40)
-                    .background(Color(uiColor: .label), in: Circle())
+                    .tabGroupsDoneStyle()
             }
+            .buttonStyle(.plain)
             .accessibilityLabel(viewModel.doneAccessibilityLabel)
             .accessibilityIdentifier("tabGroupsTray.done")
         }
@@ -108,7 +114,7 @@ struct TabGroupsTrayBottomBar: View {
             onAction(.selectPanel(panel))
         } label: {
             Text(title)
-                .font(.system(size: 12, weight: panel == viewModel.selectedPanel ? .semibold : .medium))
+                .font(.system(size: 14, weight: panel == viewModel.selectedPanel ? .semibold : .medium))
                 .lineLimit(1)
                 .padding(.horizontal, 9)
                 .frame(height: 32)
@@ -120,5 +126,30 @@ struct TabGroupsTrayBottomBar: View {
         }
         .accessibilityIdentifier("tabGroupsTray.panel.\(panel)")
         .accessibilityAddTraits(panel == viewModel.selectedPanel ? .isSelected : [])
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func tabGroupsGlass<S: Shape>(in shape: S, tint: Color? = nil) -> some View {
+        if #available(iOS 26.0, *) {
+            if let tint {
+                glassEffect(.regular.tint(tint.opacity(0.18)).interactive(), in: shape)
+            } else {
+                glassEffect(.regular.interactive(), in: shape)
+            }
+        } else {
+            background(.regularMaterial, in: shape)
+                .background(tint?.opacity(0.18) ?? .clear, in: shape)
+        }
+    }
+
+    @ViewBuilder
+    func tabGroupsDoneStyle() -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(.regular.tint(.black).interactive(), in: Circle())
+        } else {
+            background(Color(uiColor: .label), in: Circle())
+        }
     }
 }

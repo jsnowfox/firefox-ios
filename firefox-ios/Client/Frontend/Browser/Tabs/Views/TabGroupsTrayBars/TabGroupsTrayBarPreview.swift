@@ -22,7 +22,9 @@ private struct TabGroupsTrayBarPreviewHost: View {
             selectedPanel: selectedPanel,
             privateTitle: "Private",
             syncedTitle: "Sync",
-            doneAccessibilityLabel: "Done"
+            doneAccessibilityLabel: "Done",
+            groupEmoji: isGroupSelected ? "🏠" : nil,
+            groupColor: isGroupSelected ? Color(red: 0.96, green: 0.38, blue: 0.16) : nil
         )
 
         VStack(spacing: 0) {

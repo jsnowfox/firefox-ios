@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import SwiftUI
+
 struct TabGroupsTrayBarViewModel: Equatable {
     enum Panel: Equatable {
         case privateTabs
@@ -16,6 +18,8 @@ struct TabGroupsTrayBarViewModel: Equatable {
     let privateTitle: String
     let syncedTitle: String
     let doneAccessibilityLabel: String
+    var groupEmoji: String? = nil
+    var groupColor: Color? = nil
 
     var tabsTitle: String {
         "\(tabCount) \(tabCount == 1 ? "Tab" : "Tabs")"
