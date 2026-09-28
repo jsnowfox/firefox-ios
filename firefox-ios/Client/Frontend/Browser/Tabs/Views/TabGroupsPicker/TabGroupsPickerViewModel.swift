@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+import Foundation
+
 struct TabGroupsPickerViewModel: Equatable {
     struct Destination: Equatable, Identifiable {
         enum Kind: Equatable {
@@ -16,7 +18,6 @@ struct TabGroupsPickerViewModel: Equatable {
     }
 
     let title: String
-    let editTitle: String
     let doneAccessibilityLabel: String
     let destinations: [Destination]
     let privateDestination: Destination
@@ -26,9 +27,10 @@ struct TabGroupsPickerViewModel: Equatable {
 }
 
 enum TabGroupsPickerAction: Equatable {
-    case edit
     case done
     case selectDestination(id: String)
+    case deleteGroup(id: String)
+    case moveGroup(fromOffsets: IndexSet, toOffset: Int)
     case createEmptyGroup
     case createWithSelectedTabs
 }

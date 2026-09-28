@@ -7,6 +7,12 @@ import SwiftUI
 private struct TabGroupsPickerPreviewHost: View {
     @State private var selectedDestinationID: String
     let selectedTabCount: Int
+    @State private var destinations: [TabGroupsPickerViewModel.Destination] = [
+        .init(id: "mobile", title: "Mobile", kind: .device),
+        .init(id: "homes", title: "Homes", kind: .group),
+        .init(id: "pet-stuff", title: "Pet Stuff", kind: .group),
+        .init(id: "project-ideas", title: "Project Ideas", kind: .group)
+    ]
 
     init(selectedDestinationID: String = "mobile", selectedTabCount: Int = 3) {
         _selectedDestinationID = State(initialValue: selectedDestinationID)
@@ -17,14 +23,8 @@ private struct TabGroupsPickerPreviewHost: View {
         TabGroupsPickerView(
             viewModel: TabGroupsPickerViewModel(
                 title: "Tab Groups",
-                editTitle: "Edit",
                 doneAccessibilityLabel: "Done",
-                destinations: [
-                    .init(id: "mobile", title: "Mobile", kind: .device),
-                    .init(id: "homes", title: "Homes", kind: .group),
-                    .init(id: "pet-stuff", title: "Pet Stuff", kind: .group),
-                    .init(id: "project-ideas", title: "Project Ideas", kind: .group)
-                ],
+                destinations: destinations,
                 privateDestination: .init(id: "private", title: "Private", kind: .privateTabs),
                 selectedDestinationID: selectedDestinationID,
                 createEmptyGroupTitle: "New Empty Tab Group",
@@ -32,16 +32,30 @@ private struct TabGroupsPickerPreviewHost: View {
                     ? "New Tab Group with \(selectedTabCount) Tabs"
                     : nil
             ),
-            onAction: { action in
-                if case .selectDestination(let id) = action {
-                    selectedDestinationID = id
-                }
-            }
+            onAction: handle
         )
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
     }
+    private func handle(_ action: TabGroupsPickerAction) {
+        switch action {
+        case .selectDestination(let id):
+            selectedDestinationID = id
+        case .deleteGroup(let id):
+            destinations.removeAll { $0.id == id }
+            if selectedDestinationID == id {
+                selectedDestinationID = "mobile"
+            }
+        case .moveGroup(let offsets, let destination):
+            var groups = destinations.filter { $0.kind == .group }
+            groups.move(fromOffsets: offsets, toOffset: destination)
+            destinations = destinations.filter { $0.kind == .device } + groups
+        case .done, .createEmptyGroup, .createWithSelectedTabs:
+            break
+        }
+    }
+
 }
 
 #Preview("Mobile selected") {
