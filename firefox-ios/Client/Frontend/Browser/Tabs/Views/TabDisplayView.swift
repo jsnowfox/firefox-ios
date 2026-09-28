@@ -37,6 +37,22 @@ final class TabDisplayView: UIView,
 
     let panelType: TabTrayPanelType
     private(set) var tabsState: TabsPanelState
+    private var sourceState: TabsPanelState
+    var tabGroupsController: TabGroupsController? {
+        didSet { refreshGroupFilter() }
+    }
+    var sortTabsByTitle = false {
+        didSet { refreshGroupFilter() }
+    }
+    var isSelectingTabs = false {
+        didSet {
+            if !isSelectingTabs { selectedTabIDs.removeAll() }
+            updateSelectionAppearance()
+        }
+    }
+    private(set) var selectedTabIDs = Set<TabUUID>()
+    var onSelectionChange: (() -> Void)?
+    var onCreateGroupForTab: ((TabUUID) -> Void)?
     private var performingChainedOperations = false
     private var tabsSectionManager: TabsSectionManager
     private let windowUUID: WindowUUID
@@ -65,6 +81,7 @@ final class TabDisplayView: UIView,
 
                     let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
                     cell.configure(with: tab, theme: theme, delegate: self, a11yId: a11yId, newTabTitle: newTabTitle)
+                    self.configureSelectionAppearance(cell, for: tab.tabUUID)
                     if tab.tabUUID == self.minimizingTabUUID {
                         cell.isHidden = true
                     }
@@ -77,6 +94,7 @@ final class TabDisplayView: UIView,
 
                     let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
                     cell.configure(with: tab, theme: theme, delegate: self, a11yId: a11yId, newTabTitle: newTabTitle)
+                    self.configureSelectionAppearance(cell, for: tab.tabUUID)
                     return cell
                 }
             }
@@ -137,6 +155,7 @@ final class TabDisplayView: UIView,
                 tabTrayUtils: TabTrayUtils = DefaultTabTrayUtils()) {
         self.panelType = panelType
         self.tabsState = state
+        self.sourceState = state
         self.tabsSectionManager = TabsSectionManager()
         self.windowUUID = windowUUID
         self.tabTrayUtils = tabTrayUtils
@@ -162,11 +181,11 @@ final class TabDisplayView: UIView,
             return
         }
 
-        tabsState = state
+        sourceState = state
+        refreshGroupFilter()
 
-        dataSource.updateSnapshot(state: tabsState)
 
-        if let scrollState = state.scrollState {
+        if tabGroupsController == nil, let scrollState = state.scrollState {
             scrollToTab(scrollState)
         }
 
@@ -176,6 +195,41 @@ final class TabDisplayView: UIView,
                 TabPanelViewModernAction.addNewTab(ofType: type),
                 forWindowUUID: self.windowUUID
             )
+        }
+    }
+
+    func refreshGroupFilter() {
+        var displayedState = sourceState
+        if panelType == .tabs, let tabGroupsController {
+            let visibleIDs = Set(tabGroupsController.visibleTabIDs(normalTabIDs: sourceState.tabs.map(\.tabUUID)))
+            displayedState.tabs = sourceState.tabs.filter { visibleIDs.contains($0.tabUUID) }
+        }
+        let isFiltered = displayedState.tabs.count != sourceState.tabs.count
+        collectionView.dragInteractionEnabled = !isFiltered && !sortTabsByTitle
+        if sortTabsByTitle {
+            displayedState.tabs.sort {
+                $0.tabTitle.localizedStandardCompare($1.tabTitle) == .orderedAscending
+            }
+        }
+        tabsState = displayedState
+        selectedTabIDs = selectedTabIDs.intersection(Set(displayedState.tabs.map(\.tabUUID)))
+        dataSource.updateSnapshot(state: displayedState)
+        updateSelectionAppearance()
+        onSelectionChange?()
+    }
+
+    private func configureSelectionAppearance(_ cell: UICollectionViewCell, for tabID: TabUUID) {
+        cell.layer.borderWidth = isSelectingTabs && selectedTabIDs.contains(tabID) ? 3 : 0
+        cell.layer.borderColor = UIColor.systemPurple.cgColor
+        cell.layer.cornerRadius = UX.cornerRadius
+    }
+
+    private func updateSelectionAppearance() {
+        for cell in collectionView.visibleCells {
+            guard let indexPath = collectionView.indexPath(for: cell),
+                  let item = dataSource.itemIdentifier(for: indexPath),
+                  case .tab(let tab) = item else { continue }
+            configureSelectionAppearance(cell, for: tab.tabUUID)
         }
     }
 
@@ -271,6 +325,13 @@ final class TabDisplayView: UIView,
             switch selectedItem {
             case .tab(let tabModel):
                 let tabUUID = tabModel.tabUUID
+                if isSelectingTabs {
+                    if !selectedTabIDs.insert(tabUUID).inserted { selectedTabIDs.remove(tabUUID) }
+                    updateSelectionAppearance()
+                    onSelectionChange?()
+                    return
+                }
+                tabGroupsController?.recordSelectedTab(tabUUID, normalTabIDs: sourceState.tabs.map(\.tabUUID))
                 let action = TabPanelViewAction(panelType: panelType,
                                                 tabUUID: tabUUID,
                                                 selectedTabIndex: indexPath.item,
@@ -294,10 +355,29 @@ final class TabDisplayView: UIView,
         guard getSection(for: indexPath.section) == .tabs
         else { return nil }
 
-        let tabVC = TabPeekViewController(tab: tabsState.tabs[indexPath.row], windowUUID: windowUUID)
+        guard let item = dataSource.itemIdentifier(for: indexPath),
+              case .tab(let tab) = item else { return nil }
+        let tabVC = TabPeekViewController(tab: tab, windowUUID: windowUUID)
         return UIContextMenuConfiguration(identifier: nil,
                                           previewProvider: { return tabVC },
-                                          actionProvider: tabVC.contextActions)
+                                          actionProvider: { [weak self] defaultActions in
+            let menu = tabVC.contextActions(defaultActions: defaultActions)
+            guard let self, self.panelType == .tabs, let controller = self.tabGroupsController else { return menu }
+            let normalIDs = self.sourceState.tabs.map(\.tabUUID)
+            var destinations: [UIMenuElement] = [UIAction(title: "Mobile") { _ in
+                controller.assignTab(tab.tabUUID, to: nil, normalTabIDs: normalIDs)
+            }]
+            destinations += controller.state.groups.map { group in
+                UIAction(title: group.name) { _ in
+                    controller.assignTab(tab.tabUUID, to: group.id, normalTabIDs: normalIDs)
+                }
+            }
+            destinations.append(UIAction(title: "New Tab Group") { [weak self] _ in
+                self?.onCreateGroupForTab?(tab.tabUUID)
+            })
+            let moveMenu = UIMenu(title: "Move to Tab Group", children: destinations)
+            return UIMenu(children: menu.children + [moveMenu])
+        })
     }
 
     // MARK: - TabCellDelegate

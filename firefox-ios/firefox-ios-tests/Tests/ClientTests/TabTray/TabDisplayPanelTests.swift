@@ -33,6 +33,24 @@ final class TabDisplayPanelTests: XCTestCase {
         XCTAssertFalse(subject.tabsState.isPrivateTabsEmpty)
     }
 
+    @MainActor
+    func testNormalPanelShowsOnlySelectedGroupTabs() {
+        let delegate = MockTabDisplayViewDragAndDropInteraction()
+        let subject = TabDisplayPanelViewController(isPrivateMode: false,
+                                                    windowUUID: .XCTestDefaultUUID,
+                                                    dragAndDropDelegate: delegate)
+        let controller = TabGroupsController()
+        controller.createGroup(name: "Work", tabIDs: ["a"], normalTabIDs: ["a", "b"])
+        subject.tabGroupsController = controller
+        let state = TabsPanelState(windowUUID: .XCTestDefaultUUID, isPrivateMode: false)
+            .copy(tabs: [TabModel.emptyState(tabUUID: "a", title: "A"),
+                         TabModel.emptyState(tabUUID: "b", title: "B")])
+
+        subject.newState(state: state)
+
+        XCTAssertEqual(subject.tabDisplayView.tabsState.tabs.map(\.tabUUID), ["a"])
+    }
+
     // MARK: - Private
     @MainActor
     private func createSubject(isPrivateMode: Bool,

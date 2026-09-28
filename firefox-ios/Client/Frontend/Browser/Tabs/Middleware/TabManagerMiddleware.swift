@@ -393,6 +393,14 @@ final class TabManagerMiddleware: FeatureFlaggable, CanRemoveQuickActionBookmark
         // check if change is still needed
         guard let tabManager = tabManager(for: uuid) else { return }
         let tab = tabManager.addTab(urlRequest, isPrivate: isPrivate)
+        if TabGroupsFeatureFlag.isEnabled, !isPrivate {
+            let controller = TabGroupsSessionStore.controller(for: uuid)
+            if let groupID = controller.state.selectedGroupID {
+                controller.assignTab(tab.tabUUID,
+                                     to: groupID,
+                                     normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+            }
+        }
         tabManager.selectTab(tab)
 
         let dismissAction = TabTrayAction(windowUUID: uuid,

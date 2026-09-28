@@ -93,6 +93,14 @@ final class TabTrayCoordinatorTests: XCTestCase {
         XCTAssertEqual(parentCoordinator.didDismissWasCalled, 1)
     }
 
+    func testTabSettingsDelegatesToParent() {
+        let subject = createSubject()
+
+        subject.showTabSettings()
+
+        XCTAssertEqual(parentCoordinator.didRequestTabSettingsWasCalled, 1)
+    }
+
     // MARK: - Helpers
     private func createSubject(panelType: TabTrayPanelType = .tabs,
                                file: StaticString = #filePath,

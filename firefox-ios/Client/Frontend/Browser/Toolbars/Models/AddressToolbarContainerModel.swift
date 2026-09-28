@@ -282,6 +282,7 @@ final class AddressToolbarContainerModel: Equatable {
     private static func mapAction(_ action: ToolbarActionConfiguration,
                                   isShowingTopTabs: Bool,
                                   windowUUID: UUID) -> ToolbarElement {
+        let action = TabGroupsToolbarButtonViewModel.configure(action, for: windowUUID)
         return ToolbarElement(
             iconName: action.iconName,
             title: action.actionLabel,
