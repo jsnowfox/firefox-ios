@@ -144,6 +144,8 @@ extension TabTrayViewController {
             guard let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs,
                   !selectedIDs.isEmpty else { return }
             showGroupEditor(tabIDs: Array(selectedIDs))
+        case .moveSelectionToGroup:
+            showMoveSelectedTabsMenu()
         case .closeSelectedTabs:
             guard let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs,
                   !selectedIDs.isEmpty,
@@ -158,6 +160,46 @@ extension TabTrayViewController {
             })
             present(alert, animated: true)
         }
+    }
+
+    private func showMoveSelectedTabsMenu() {
+        guard let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs,
+              !selectedIDs.isEmpty,
+              let controller = tabGroupsController else { return }
+
+        let alert = UIAlertController(title: "Move \(selectedIDs.count) Tabs To",
+                                      message: nil,
+                                      preferredStyle: .actionSheet)
+        if controller.state.selectedGroupID != nil {
+            alert.addAction(UIAlertAction(title: "Mobile", style: .default) { [weak self] _ in
+                self?.moveSelectedTabs(selectedIDs, to: nil)
+            })
+        }
+        for group in controller.state.groups where group.id != controller.state.selectedGroupID {
+            alert.addAction(UIAlertAction(title: "\(group.emoji) \(group.name)", style: .default) { [weak self] _ in
+                self?.moveSelectedTabs(selectedIDs, to: group.id)
+            })
+        }
+        if alert.actions.isEmpty {
+            alert.message = "Create another group to move these tabs."
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.popoverPresentationController?.sourceView = tabGroupsBottomHost?.view ?? view
+        alert.popoverPresentationController?.sourceRect = tabGroupsBottomHost?.view.bounds ?? view.bounds
+        present(alert, animated: true)
+    }
+
+    private func moveSelectedTabs(_ selectedIDs: Set<TabUUID>, to groupID: UUID?) {
+        guard let controller = tabGroupsController, let tabManager else { return }
+        let normalIDs = tabManager.normalTabs.map(\.tabUUID)
+        let movingIDs = normalIDs.filter { selectedIDs.contains($0) }
+        normalTabPanel?.tabDisplayView.isSelectingTabs = false
+        controller.moveTabs(movingIDs, to: groupID, normalTabIDs: normalIDs)
+        if let tabID = controller.preferredTabID(normalTabIDs: normalIDs),
+           let tab = tabManager.getTabForUUID(uuid: tabID) {
+            tabManager.selectTab(tab)
+        }
+        refreshTabGroupsUI()
     }
 
     private func showTabGroupsPicker() {

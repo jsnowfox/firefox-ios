@@ -259,8 +259,10 @@ final class TabDisplayView: UIView,
         let color = selectedGroupColor
         if let cell = cell as? TabCell {
             cell.setSelectedGroupColor(color, theme: theme)
+            cell.setTabSelectionMode(isSelectingTabs, theme: theme)
         } else if let cell = cell as? ExperimentTabCell {
             cell.setSelectedGroupColor(color, theme: theme)
+            cell.setTabSelectionMode(isSelectingTabs, theme: theme)
         }
         let showsRing = isSelectingTabs && selectedTabIDs.contains(tabID)
         if let ring = cell.subviews.first(where: { $0 is SelectionRingView }) {

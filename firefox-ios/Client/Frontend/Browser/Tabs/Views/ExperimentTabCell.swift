@@ -91,6 +91,7 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
 
     private var borderLayer = CAShapeLayer()
     private var selectedGroupColor: UIColor?
+    private var hidesSelectedBorder = false
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -106,7 +107,7 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         closeButtonBlurView.layer.cornerRadius = closeButtonBlurView.frame.height / 2
 
         // Handles initial draw and non-rotation layout changes (e.g. multitasking resize).
-        guard isSelectedTab, backgroundHolder.bounds != borderLayer.frame else { return }
+        guard isSelectedTab, !hidesSelectedBorder, backgroundHolder.bounds != borderLayer.frame else { return }
         redrawExternalBorder()
     }
 
@@ -114,7 +115,7 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         super.traitCollectionDidChange(previousTraitCollection)
 
         // Defers redraw via Task so the border updates after the rotation animation completes.
-        guard isSelectedTab,
+        guard isSelectedTab, !hidesSelectedBorder,
               previousTraitCollection?.horizontalSizeClass != traitCollection.horizontalSizeClass
               || previousTraitCollection?.verticalSizeClass != traitCollection.verticalSizeClass
         else { return }
@@ -335,6 +336,10 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
     }
 
     func setSelectedState(isPrivate: Bool, theme: Theme) {
+        guard !hidesSelectedBorder else {
+            setUnselectedState(theme: theme)
+            return
+        }
         // We are using a non-CALayer borderWidth for unselected cells for reduced graphics processing
         // we zero that value here when we are in the selected state to assign the CAShapeLayer
         backgroundHolder.layer.borderWidth = UX.zeroBorderWidth
@@ -367,6 +372,12 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         setSelectedState(isPrivate: tabModel?.isPrivate ?? false, theme: theme)
     }
 
+    func setTabSelectionMode(_ isSelectingTabs: Bool, theme: Theme?) {
+        hidesSelectedBorder = isSelectingTabs
+        guard isSelectedTab, let theme else { return }
+        setSelectedState(isPrivate: tabModel?.isPrivate ?? false, theme: theme)
+    }
+
     // MARK: - UICollectionViewCell
 
     override func prepareForReuse() {
@@ -374,6 +385,7 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         super.prepareForReuse()
         tabModel = nil
         selectedGroupColor = nil
+        hidesSelectedBorder = false
         accessibilityLabel = nil
         screenshotView.image = nil
         smallFaviconView.isHidden = true

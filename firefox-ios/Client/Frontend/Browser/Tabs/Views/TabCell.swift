@@ -87,6 +87,7 @@ final class TabCell: UICollectionViewCell,
 
     private var borderGradientColors: [CGColor]?
     private var selectedGroupColor: UIColor?
+    private var hidesSelectedBorder = false
 
     // MARK: - Initializer
 
@@ -186,9 +187,10 @@ final class TabCell: UICollectionViewCell,
 
     private func updateBorder(theme: Theme, isSelected: Bool, isPrivate: Bool) {
         borderGradientColors = nil
-        layer.borderWidth = isSelected ? UX.borderWidth : 0
+        let showsSelectedBorder = isSelected && !hidesSelectedBorder
+        layer.borderWidth = showsSelectedBorder ? UX.borderWidth : 0
 
-        guard isSelected else {
+        guard showsSelectedBorder else {
             layer.borderColor = UIColor.clear.cgColor
             return
         }
@@ -285,6 +287,12 @@ final class TabCell: UICollectionViewCell,
         updateBorder(theme: theme, isSelected: isSelectedTab, isPrivate: tabModel?.isPrivate ?? false)
     }
 
+    func setTabSelectionMode(_ isSelectingTabs: Bool, theme: Theme?) {
+        hidesSelectedBorder = isSelectingTabs
+        guard let theme else { return }
+        updateBorder(theme: theme, isSelected: isSelectedTab, isPrivate: tabModel?.isPrivate ?? false)
+    }
+
     // MARK: - UICollectionViewCell
 
     override func layoutSubviews() {
@@ -305,6 +313,7 @@ final class TabCell: UICollectionViewCell,
         faviconBG.isHidden = true
         borderGradientColors = nil
         selectedGroupColor = nil
+        hidesSelectedBorder = false
         layer.borderColor = UIColor.clear.cgColor
         layer.borderWidth = 0
         layer.shadowOffset = .zero
