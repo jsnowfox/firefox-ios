@@ -60,8 +60,21 @@ extension TabTrayViewController {
               let tabManager,
               let topHost = tabGroupsTopHost,
               let bottomHost = tabGroupsBottomHost else { return }
+        controller.reconcile(normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
         let normalIDs = tabManager.normalTabs.map(\.tabUUID)
-        controller.reconcile(normalTabIDs: normalIDs)
+        if tabTrayState.selectedPanel == .tabs,
+           !isAddingTabToEmptyGroup,
+           let groupID = controller.state.selectedGroupID,
+           controller.visibleTabIDs(normalTabIDs: normalIDs).isEmpty {
+            isAddingTabToEmptyGroup = true
+            defer { isAddingTabToEmptyGroup = false }
+            let tab = tabManager.addTab(nil, isPrivate: false)
+            controller.assignTab(tab.tabUUID,
+                                 to: groupID,
+                                 normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+            tabManager.selectTab(tab)
+            return
+        }
         let selectedGroup = controller.state.groups.first { $0.id == controller.state.selectedGroupID }
         let selectedPanel: TabGroupsTrayBarViewModel.Panel = switch tabTrayState.selectedPanel {
         case .tabs: .tabs
@@ -75,15 +88,18 @@ extension TabTrayViewController {
             selectedPanel: selectedPanel,
             privateTitle: "Private",
             syncedTitle: "Sync",
-            doneAccessibilityLabel: "Done")
+            doneAccessibilityLabel: "Done",
+            groupEmoji: selectedGroup?.emoji,
+            groupColor: selectedGroup?.color.swiftUIColor)
         let menuModel = TabGroupsContextMenuViewModel(
             showsGroupActions: selectedGroup != nil,
             selectTabsTitle: normalTabPanel?.tabDisplayView.isSelectingTabs == true ? "Done Selecting" : "Select Tabs",
             arrangeTabsTitle: "Arrange Tabs By",
-            customizeGroupTitle: "Rename Group",
+            customizeGroupTitle: "Customize Group",
             closeTabsTitle: "Close Tabs",
             ungroupTitle: "Ungroup",
-            tabSettingsTitle: "Tab Settings")
+            tabSettingsTitle: "Tab Settings",
+            sortsByTitle: normalTabPanel?.tabDisplayView.sortTabsByTitle == true)
         topHost.rootView = AnyView(TabGroupsTrayTopBar(viewModel: viewModel, onAction: { [weak self] action in
             self?.handleTabGroupsBarAction(action)
         }) {
@@ -117,6 +133,8 @@ extension TabTrayViewController {
             didSelectSection(panelType: panelType)
         case .done:
             doneButtonTapped()
+        case .finishSelection, .createGroupFromSelection, .closeSelectedTabs:
+            break
         }
     }
 
@@ -135,7 +153,11 @@ extension TabTrayViewController {
         let destinations: [TabGroupsPickerViewModel.Destination] = [
             .init(id: "mobile", title: "Mobile", kind: .device)
         ] + controller.state.groups.map {
-            .init(id: $0.id.uuidString, title: $0.name, kind: .group)
+            .init(id: $0.id.uuidString,
+                  title: $0.name,
+                  kind: .group,
+                  emoji: $0.emoji,
+                  color: $0.color.swiftUIColor)
         }
         let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs ?? []
         let model = TabGroupsPickerViewModel(
@@ -182,30 +204,50 @@ extension TabTrayViewController {
             let selectedIDs = action == .createWithSelectedTabs
                 ? Array(normalTabPanel?.tabDisplayView.selectedTabIDs ?? []) : []
             tabGroupsPickerHost?.dismiss(animated: true) { [weak self] in
-                self?.promptForNewGroup(with: selectedIDs)
+                self?.showGroupEditor(tabIDs: selectedIDs)
             }
         }
     }
 
     private func promptForNewGroup(with tabIDs: [TabUUID]) {
+        showGroupEditor(tabIDs: tabIDs)
+    }
+
+    private func showGroupEditor(group: TabGroup? = nil, tabIDs: [TabUUID] = []) {
         guard let controller = tabGroupsController, let tabManager else { return }
-        let alert = UIAlertController(title: "New Tab Group", message: nil, preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "Group name" }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Create", style: .default) { [weak self, weak alert] _ in
+        let editor = TabGroupEditorView(name: group?.name ?? "",
+                                        emoji: group?.emoji ?? "🗂️",
+                                        color: group?.color ?? .orange,
+                                        isEditing: group != nil,
+                                        onCancel: { [weak self] in self?.dismiss(animated: true) },
+                                        onSave: { [weak self] name, emoji, color in
             guard let self else { return }
-            let name = alert?.textFields?.first?.text ?? ""
-            let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-            controller.createGroup(name: trimmedName.isEmpty ? "New Tab Group" : trimmedName,
-                                   tabIDs: tabIDs,
-                                   normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
-            if let preferredID = controller.preferredTabID(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)),
-               let tab = tabManager.getTabForUUID(uuid: preferredID) {
-                tabManager.selectTab(tab)
+            if let group {
+                controller.updateGroup(id: group.id, name: name, emoji: emoji, color: color)
+            } else {
+                let initialTabIDs: [TabUUID]
+                if tabIDs.isEmpty {
+                    initialTabIDs = [tabManager.addTab(nil, isPrivate: false).tabUUID]
+                } else {
+                    initialTabIDs = tabIDs
+                }
+                controller.createGroup(name: name,
+                                       emoji: emoji,
+                                       color: color,
+                                       tabIDs: initialTabIDs,
+                                       normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+                if let preferredID = controller.preferredTabID(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)),
+                   let tab = tabManager.getTabForUUID(uuid: preferredID) {
+                    tabManager.selectTab(tab)
+                }
+                self.normalTabPanel?.tabDisplayView.isSelectingTabs = false
             }
-            self.normalTabPanel?.tabDisplayView.isSelectingTabs = false
+            self.dismiss(animated: true)
         })
-        present(alert, animated: true)
+        let host = UIHostingController(rootView: editor)
+        host.modalPresentationStyle = .pageSheet
+        host.sheetPresentationController?.detents = [.large()]
+        present(host, animated: true)
     }
 
     private func handleTabGroupsMenuAction(_ action: TabGroupsContextMenuAction) {
@@ -216,17 +258,15 @@ extension TabTrayViewController {
                 displayView.isSelectingTabs.toggle()
                 refreshTabGroupsUI()
             }
-        case .arrangeTabs:
-            showArrangeTabsOptions()
+        case .arrangeTabsByOriginalOrder:
+            normalTabPanel?.tabDisplayView.sortTabsByTitle = false
+            refreshTabGroupsUI()
+        case .arrangeTabsByTitle:
+            normalTabPanel?.tabDisplayView.sortTabsByTitle = true
+            refreshTabGroupsUI()
         case .customizeGroup:
             guard let group = controller.state.groups.first(where: { $0.id == controller.state.selectedGroupID }) else { return }
-            let alert = UIAlertController(title: "Rename Tab Group", message: nil, preferredStyle: .alert)
-            alert.addTextField { $0.text = group.name }
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak alert] _ in
-                controller.renameGroup(id: group.id, name: alert?.textFields?.first?.text ?? "")
-            })
-            present(alert, animated: true)
+            showGroupEditor(group: group)
         case .closeTabs:
             let visibleIDs = Set(controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)))
             let tabs = tabManager.normalTabs.filter { visibleIDs.contains($0.tabUUID) }
@@ -242,22 +282,6 @@ extension TabTrayViewController {
         case .tabSettings:
             navigationHandler?.showTabSettings()
         }
-    }
-
-    private func showArrangeTabsOptions() {
-        let alert = UIAlertController(title: "Arrange Tabs By", message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "Original Order", style: .default) { [weak self] _ in
-            self?.normalTabPanel?.tabDisplayView.sortTabsByTitle = false
-        })
-        alert.addAction(UIAlertAction(title: "Title", style: .default) { [weak self] _ in
-            self?.normalTabPanel?.tabDisplayView.sortTabsByTitle = true
-        })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        if let popover = alert.popoverPresentationController {
-            popover.sourceView = tabGroupsTopHost?.view
-            popover.sourceRect = tabGroupsTopHost?.view.bounds ?? .zero
-        }
-        present(alert, animated: true)
     }
 
 }

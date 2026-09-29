@@ -32,7 +32,25 @@ final class TabDisplayView: UIView,
                       SwipeAnimatorDelegate,
                       InsetUpdatable {
     struct UX {
-        static let cornerRadius: CGFloat = 6.0
+        static let selectionRingGap: CGFloat = 5
+        static let selectionRingWidth: CGFloat = 3
+        static let selectionRingCornerRadius: CGFloat = 21
+    }
+
+    private final class SelectionRingView: UIView {
+        init(color: UIColor) {
+            super.init(frame: .zero)
+            translatesAutoresizingMaskIntoConstraints = false
+            isUserInteractionEnabled = false
+            backgroundColor = .clear
+            layer.borderColor = color.cgColor
+            layer.borderWidth = UX.selectionRingWidth
+            layer.cornerRadius = UX.selectionRingCornerRadius
+        }
+
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
     }
 
     let panelType: TabTrayPanelType
@@ -80,7 +98,12 @@ final class TabDisplayView: UIView,
                     ) as? ExperimentTabCell else { return UICollectionViewCell() }
 
                     let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
-                    cell.configure(with: tab, theme: theme, delegate: self, a11yId: a11yId, newTabTitle: newTabTitle)
+                    cell.configure(with: tab,
+                                   theme: theme,
+                                   delegate: self,
+                                   a11yId: a11yId,
+                                   newTabTitle: newTabTitle,
+                                   selectedGroupColor: selectedGroupColor)
                     self.configureSelectionAppearance(cell, for: tab.tabUUID)
                     if tab.tabUUID == self.minimizingTabUUID {
                         cell.isHidden = true
@@ -93,7 +116,12 @@ final class TabDisplayView: UIView,
                     ) as? TabCell else { return UICollectionViewCell() }
 
                     let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
-                    cell.configure(with: tab, theme: theme, delegate: self, a11yId: a11yId, newTabTitle: newTabTitle)
+                    cell.configure(with: tab,
+                                   theme: theme,
+                                   delegate: self,
+                                   a11yId: a11yId,
+                                   newTabTitle: newTabTitle,
+                                   selectedGroupColor: selectedGroupColor)
                     self.configureSelectionAppearance(cell, for: tab.tabUUID)
                     return cell
                 }
@@ -218,10 +246,39 @@ final class TabDisplayView: UIView,
         onSelectionChange?()
     }
 
+    private var selectedGroupColor: UIColor? {
+        guard panelType == .tabs,
+              let controller = tabGroupsController,
+              let group = controller.state.groups.first(where: { $0.id == controller.state.selectedGroupID }) else {
+            return nil
+        }
+        return group.color.uiColor
+    }
+
     private func configureSelectionAppearance(_ cell: UICollectionViewCell, for tabID: TabUUID) {
-        cell.layer.borderWidth = isSelectingTabs && selectedTabIDs.contains(tabID) ? 3 : 0
-        cell.layer.borderColor = UIColor.systemPurple.cgColor
-        cell.layer.cornerRadius = UX.cornerRadius
+        let color = selectedGroupColor
+        if let cell = cell as? TabCell {
+            cell.setSelectedGroupColor(color, theme: theme)
+        } else if let cell = cell as? ExperimentTabCell {
+            cell.setSelectedGroupColor(color, theme: theme)
+        }
+        let showsRing = isSelectingTabs && selectedTabIDs.contains(tabID)
+        if let ring = cell.subviews.first(where: { $0 is SelectionRingView }) {
+            ring.isHidden = !showsRing
+            if let theme {
+                ring.layer.borderColor = theme.colors.actionPrimary.cgColor
+            }
+        } else if showsRing, let theme {
+            let ring = SelectionRingView(color: theme.colors.actionPrimary)
+            cell.clipsToBounds = false
+            cell.addSubview(ring)
+            NSLayoutConstraint.activate([
+                ring.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: -UX.selectionRingGap),
+                ring.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: UX.selectionRingGap),
+                ring.topAnchor.constraint(equalTo: cell.topAnchor, constant: -UX.selectionRingGap),
+                ring.bottomAnchor.constraint(equalTo: cell.bottomAnchor, constant: UX.selectionRingGap)
+            ])
+        }
     }
 
     private func updateSelectionAppearance() {
@@ -305,6 +362,7 @@ final class TabDisplayView: UIView,
         self.theme = theme
         collectionView.backgroundColor = theme.isNova ? theme.colors.layer1 : theme.colors.layer3
         collectionView.visibleCells.forEach { ($0 as? ThemeApplicable)?.applyTheme(theme: theme) }
+        updateSelectionAppearance()
         collectionView.visibleSupplementaryViews(ofKind: TabTitleSupplementaryView.cellIdentifier)
             .compactMap { $0 as? TabTitleSupplementaryView }
             .forEach { $0.applyTheme(theme: theme) }

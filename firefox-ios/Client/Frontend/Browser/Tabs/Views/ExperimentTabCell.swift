@@ -90,6 +90,7 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
     }
 
     private var borderLayer = CAShapeLayer()
+    private var selectedGroupColor: UIColor?
 
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -160,10 +161,12 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         theme: Theme?,
         delegate: TabCellDelegate,
         a11yId: String,
-        newTabTitle: String?
+        newTabTitle: String?,
+        selectedGroupColor: UIColor? = nil
     ) {
         self.tabModel = tabModel
         self.delegate = delegate
+        self.selectedGroupColor = selectedGroupColor
 
         if let swipeAnimatorDelegate = delegate as? SwipeAnimatorDelegate {
             animator?.delegate = swipeAnimatorDelegate
@@ -336,6 +339,11 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         // we zero that value here when we are in the selected state to assign the CAShapeLayer
         backgroundHolder.layer.borderWidth = UX.zeroBorderWidth
 
+        if let selectedGroupColor {
+            addExternalBorder(to: backgroundHolder, color: selectedGroupColor, width: UX.selectedBorderWidth)
+            return
+        }
+
         if theme.isNova {
             let gradientColor = UIColor(patternImage: gradientBorderImage(size: backgroundHolder.bounds.size,
                                                                           colors: theme.colors.gradientBorder.cgColors))
@@ -353,12 +361,19 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
         backgroundHolder.layer.borderWidth = UX.unselectedBorderWidth
     }
 
+    func setSelectedGroupColor(_ color: UIColor?, theme: Theme?) {
+        selectedGroupColor = color
+        guard isSelectedTab, let theme else { return }
+        setSelectedState(isPrivate: tabModel?.isPrivate ?? false, theme: theme)
+    }
+
     // MARK: - UICollectionViewCell
 
     override func prepareForReuse() {
         // Reset any close animations.
         super.prepareForReuse()
         tabModel = nil
+        selectedGroupColor = nil
         accessibilityLabel = nil
         screenshotView.image = nil
         smallFaviconView.isHidden = true

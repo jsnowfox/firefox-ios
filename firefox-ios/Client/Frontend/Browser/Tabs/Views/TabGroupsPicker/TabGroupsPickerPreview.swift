@@ -9,9 +9,9 @@ private struct TabGroupsPickerPreviewHost: View {
     let selectedTabCount: Int
     private static let defaultDestinations: [TabGroupsPickerViewModel.Destination] = [
         .init(id: "mobile", title: "Mobile", kind: .device),
-        .init(id: "homes", title: "Homes", kind: .group),
-        .init(id: "pet-stuff", title: "Pet Stuff", kind: .group),
-        .init(id: "project-ideas", title: "Project Ideas", kind: .group)
+        .init(id: "homes", title: "Homes", kind: .group, emoji: "🏠", color: .orange),
+        .init(id: "pet-stuff", title: "Pet Stuff", kind: .group, emoji: "🐾", color: .green),
+        .init(id: "project-ideas", title: "Project Ideas", kind: .group, emoji: "💡", color: .purple)
     ]
 
     @State private var destinations: [TabGroupsPickerViewModel.Destination]

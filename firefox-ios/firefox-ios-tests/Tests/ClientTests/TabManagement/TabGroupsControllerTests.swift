@@ -55,6 +55,22 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b", "c"]), ["a", "c"])
     }
 
+    func testVisibleTabsStayWithinSelectedDestination() {
+        let controller = TabGroupsController()
+        let normalTabIDs = ["a", "b", "c", "d"]
+        let groupID = controller.createGroup(name: "Work", tabIDs: ["b", "d"], normalTabIDs: normalTabIDs)
+
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: normalTabIDs), ["b", "d"])
+
+        controller.selectGroup(id: nil)
+
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: normalTabIDs), ["a", "c"])
+
+        controller.selectGroup(id: groupID)
+
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: normalTabIDs), ["b", "d"])
+    }
+
     func testReconcileRemovesClosedTabsAndExcludesPrivateTabs() throws {
         let controller = TabGroupsController()
         let groupID = try XCTUnwrap(controller.createGroup(name: "Work", tabIDs: ["a", "private"], normalTabIDs: ["a", "b"]))
@@ -98,5 +114,51 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.state.groups[0].name, "Personal")
         XCTAssertEqual(controller.state.groups[0].emoji, "🏠")
         XCTAssertEqual(controller.state.groups[0].color, .green)
+    }
+
+    func testToolbarUsesSelectedGroupEmoji() {
+        let windowUUID = UUID()
+        defer { TabGroupsSessionStore.removeController(for: windowUUID) }
+        let controller = TabGroupsSessionStore.controller(for: windowUUID)
+        let action = ToolbarActionConfiguration(actionType: .tabs,
+                                                iconName: "tabCount",
+                                                numberOfTabs: 1,
+                                                isEnabled: true,
+                                                a11yLabel: "Tabs",
+                                                a11yId: "tabs")
+
+        XCTAssertEqual(TabGroupsToolbarButtonViewModel.configure(action, for: windowUUID), action)
+
+        controller.createGroup(name: "Work", emoji: "💼", tabIDs: ["a"], normalTabIDs: ["a"])
+        let configured = TabGroupsToolbarButtonViewModel.configure(action, for: windowUUID)
+
+        if TabGroupsFeatureFlag.isEnabled {
+            XCTAssertEqual(configured.actionLabel, "💼")
+            XCTAssertNil(configured.iconName)
+            XCTAssertNil(configured.numberOfTabs)
+            XCTAssertEqual(configured.a11yLabel, "Work Tab Group")
+        } else {
+            XCTAssertEqual(configured, action)
+        }
+    }
+
+    func testToolbarCountsOnlyMobileTabs() {
+        let windowUUID = UUID()
+        defer { TabGroupsSessionStore.removeController(for: windowUUID) }
+        let controller = TabGroupsSessionStore.controller(for: windowUUID)
+        let action = ToolbarActionConfiguration(actionType: .tabs,
+                                                iconName: "tabCount",
+                                                numberOfTabs: 3,
+                                                isEnabled: true,
+                                                a11yLabel: "Tabs",
+                                                a11yId: "tabs")
+        controller.createGroup(name: "Work", tabIDs: ["a", "c"], normalTabIDs: ["a", "b", "c"])
+        controller.selectGroup(id: nil)
+
+        let configured = TabGroupsToolbarButtonViewModel.configure(action,
+                                                                   for: windowUUID,
+                                                                   normalTabIDs: ["a", "b", "c"])
+
+        XCTAssertEqual(configured.numberOfTabs, TabGroupsFeatureFlag.isEnabled ? 1 : 3)
     }
 }

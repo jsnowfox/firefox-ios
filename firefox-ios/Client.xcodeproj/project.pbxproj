@@ -482,6 +482,7 @@
 		392D791A2F8FCE1A00B10BDC /* FeatureFlagID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392D79192F8FCE0E00B10BDC /* FeatureFlagID.swift */; };
 		26CC5468CF3075C7FDB5E4E1 /* TabGroupsFeatureFlag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6490D091AB3E3ED2BDDF36EF /* TabGroupsFeatureFlag.swift */; };
 		CB4B79A09A5A4F708607D6C0 /* TabGroupsPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04CE1180175E484486B955DD /* TabGroupsPickerView.swift */; };
+		F1E1A9C90EED44D28BBEE901 /* TabGroupEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E1A9C90EED44D28BBEE902 /* TabGroupEditorView.swift */; };
 		69D292EF051E4389AF6ECF3C /* TabGroupsPickerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCD66A505174674B87656EE /* TabGroupsPickerViewModel.swift */; };
 		580705F9591F4835A43EA1A4 /* TabGroupsPickerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F9FD0BCB2C422AB3BA099B /* TabGroupsPickerPreview.swift */; };
 		392D80542F901D2600B10BDC /* UserFeaturePreferenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 392D80532F901D1500B10BDC /* UserFeaturePreferenceManager.swift */; };
@@ -3590,6 +3591,7 @@
 		392D79192F8FCE0E00B10BDC /* FeatureFlagID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagID.swift; sourceTree = "<group>"; };
 		6490D091AB3E3ED2BDDF36EF /* TabGroupsFeatureFlag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsFeatureFlag.swift; sourceTree = "<group>"; };
 		04CE1180175E484486B955DD /* TabGroupsPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsPickerView.swift; sourceTree = "<group>"; };
+		F1E1A9C90EED44D28BBEE902 /* TabGroupEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupEditorView.swift; sourceTree = "<group>"; };
 		8BCD66A505174674B87656EE /* TabGroupsPickerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsPickerViewModel.swift; sourceTree = "<group>"; };
 		B0F9FD0BCB2C422AB3BA099B /* TabGroupsPickerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabGroupsPickerPreview.swift; sourceTree = "<group>"; };
 		392D80532F901D1500B10BDC /* UserFeaturePreferenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFeaturePreferenceManager.swift; sourceTree = "<group>"; };
@@ -13272,6 +13274,7 @@
 		ABFAB7BF5B674D2A8F6F0FFF /* TabGroupsPicker */ = {
 			isa = PBXGroup;
 			children = (
+				F1E1A9C90EED44D28BBEE902 /* TabGroupEditorView.swift */,
 				04CE1180175E484486B955DD /* TabGroupsPickerView.swift */,
 				8BCD66A505174674B87656EE /* TabGroupsPickerViewModel.swift */,
 				B0F9FD0BCB2C422AB3BA099B /* TabGroupsPickerPreview.swift */,
@@ -20081,6 +20084,7 @@
 				392D791A2F8FCE1A00B10BDC /* FeatureFlagID.swift in Sources */,
 				26CC5468CF3075C7FDB5E4E1 /* TabGroupsFeatureFlag.swift in Sources */,
 				CB4B79A09A5A4F708607D6C0 /* TabGroupsPickerView.swift in Sources */,
+				F1E1A9C90EED44D28BBEE901 /* TabGroupEditorView.swift in Sources */,
 				69D292EF051E4389AF6ECF3C /* TabGroupsPickerViewModel.swift in Sources */,
 				580705F9591F4835A43EA1A4 /* TabGroupsPickerPreview.swift in Sources */,
 				D8F4DDB9254C4BCD84DAFDAC /* TabGroupsToolbarButtonViewModel.swift in Sources */,

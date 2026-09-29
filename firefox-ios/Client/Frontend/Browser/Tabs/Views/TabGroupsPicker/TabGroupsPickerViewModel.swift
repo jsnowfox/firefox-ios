@@ -29,6 +29,8 @@ struct TabGroupsPickerViewModel: Equatable {
         let id: String
         let title: String
         let kind: Kind
+        var emoji: String? = nil
+        var color: Color? = nil
     }
 
     let title: String

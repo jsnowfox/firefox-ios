@@ -14,20 +14,34 @@ struct TabGroupsToolbarButtonViewModel: Equatable {
 @MainActor
 extension TabGroupsToolbarButtonViewModel {
     static func configure(_ action: ToolbarActionConfiguration,
-                          for windowUUID: WindowUUID) -> ToolbarActionConfiguration {
+                          for windowUUID: WindowUUID,
+                          normalTabIDs: [TabUUID]? = nil) -> ToolbarActionConfiguration {
         guard TabGroupsFeatureFlag.isEnabled,
               action.actionType == .tabs,
-              action.badgeImageName == nil,
-              TabGroupsSessionStore.controller(for: windowUUID).state.selectedGroupID != nil else { return action }
+              action.badgeImageName == nil else { return action }
+        let controller = TabGroupsSessionStore.controller(for: windowUUID)
+        let state = controller.state
+        guard let selectedGroupID = state.selectedGroupID,
+              let group = state.groups.first(where: { $0.id == selectedGroupID }) else {
+            guard !state.groups.isEmpty, action.numberOfTabs != nil else { return action }
+            let liveTabIDs = normalTabIDs ?? {
+                let windowManager: WindowManager = AppContainer.shared.resolve()
+                return windowManager.windows[windowUUID]?.tabManager?.normalTabs.map(\.tabUUID)
+            }()
+            guard let liveTabIDs else { return action }
+            var configured = action
+            configured.numberOfTabs = controller.visibleTabIDs(normalTabIDs: liveTabIDs).count
+            return configured
+        }
         var configured = action
-        configured.iconName = "tabGroupsLarge"
-        configured.templateModeForImage = false
+        configured.actionLabel = group.emoji
+        configured.iconName = nil
         configured.numberOfTabs = nil
         configured.badgeImageName = nil
         configured.maskImageName = nil
         configured.isSelected = true
         configured.cacheId = "tabGroupsToolbar.button"
-        configured.a11yLabel = "Tab Groups"
+        configured.a11yLabel = "\(group.name) Tab Group"
         return configured
     }
 }

@@ -18,4 +18,10 @@ enum TabGroupsSessionStore {
     static func removeController(for windowUUID: WindowUUID) {
         controllers[windowUUID] = nil
     }
+
+    static func visibleNormalTabs(_ normalTabs: [Tab], for windowUUID: WindowUUID) -> [Tab] {
+        guard TabGroupsFeatureFlag.isEnabled else { return normalTabs }
+        let visibleIDs = Set(controller(for: windowUUID).visibleTabIDs(normalTabIDs: normalTabs.map(\.tabUUID)))
+        return normalTabs.filter { visibleIDs.contains($0.tabUUID) }
+    }
 }

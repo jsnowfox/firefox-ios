@@ -3570,6 +3570,14 @@ class BrowserViewController: UIViewController,
         }
 
         let tab = tabManager.addTab(request, isPrivate: isPrivate)
+        if TabGroupsFeatureFlag.isEnabled, !isPrivate {
+            let controller = TabGroupsSessionStore.controller(for: windowUUID)
+            if let groupID = controller.state.selectedGroupID {
+                controller.assignTab(tab.tabUUID,
+                                     to: groupID,
+                                     normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+            }
+        }
         tabManager.selectTab(tab)
         return tab
     }

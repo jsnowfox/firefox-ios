@@ -146,7 +146,7 @@ struct TabGroupsPickerView: View {
                     Text(destination.title)
                         .font(.system(size: 17))
                 } icon: {
-                    destinationIcon(for: destination.kind)
+                    destinationIcon(for: destination)
                 }
                 .labelStyle(DestinationLabelStyle())
 
@@ -155,7 +155,7 @@ struct TabGroupsPickerView: View {
                 if destination.id == viewModel.selectedDestinationID {
                     Image(systemName: "checkmark")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(viewModel.colors.accent)
+                        .foregroundStyle(destination.color ?? viewModel.colors.accent)
                 }
             }
             .foregroundStyle(viewModel.colors.primaryText)
@@ -177,15 +177,20 @@ struct TabGroupsPickerView: View {
     }
 
     @ViewBuilder
-    private func destinationIcon(for kind: TabGroupsPickerViewModel.Destination.Kind) -> some View {
-        switch kind {
+    private func destinationIcon(for destination: TabGroupsPickerViewModel.Destination) -> some View {
+        switch destination.kind {
         case .device:
             Image("deviceMobileLarge")
                 .resizable()
                 .scaledToFit()
         case .group:
-            Image(systemName: "square.grid.2x2")
-                .font(.system(size: 18, weight: .medium))
+            if let emoji = destination.emoji {
+                Text(emoji)
+                    .font(.system(size: 22))
+            } else {
+                Image(systemName: "square.grid.2x2")
+                    .font(.system(size: 18, weight: .medium))
+            }
         case .privateTabs:
             Image("privateModeLarge")
                 .resizable()

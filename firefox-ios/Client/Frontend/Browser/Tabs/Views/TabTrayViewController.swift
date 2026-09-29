@@ -74,6 +74,7 @@ final class TabTrayViewController: UIViewController,
     var tabGroupsTopHost: UIHostingController<AnyView>?
     var tabGroupsBottomHost: UIHostingController<AnyView>?
     var tabGroupsPickerHost: UIHostingController<AnyView>?
+    var isAddingTabToEmptyGroup = false
     private lazy var themeAnimator = TabTrayThemeAnimator()
 
     private let blurView: UIVisualEffectView = .build { view in
