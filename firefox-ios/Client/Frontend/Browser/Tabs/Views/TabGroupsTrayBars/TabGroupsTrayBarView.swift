@@ -172,7 +172,6 @@ struct TabGroupsTrayBottomBar: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                 }
-                .background(Color(uiColor: .systemGroupedBackground), in: Capsule())
             } else {
                 standardBar.padding(.horizontal, 20)
             }
@@ -195,7 +194,6 @@ struct TabGroupsTrayBottomBar: View {
                 .foregroundStyle(role == .destructive ? Color(uiColor: .systemRed) : Color(uiColor: .label))
                 .padding(.horizontal, 16)
                 .frame(height: 40)
-                .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
                 .tabGroupsGlass(in: Capsule())
         }
         .buttonStyle(.plain)
