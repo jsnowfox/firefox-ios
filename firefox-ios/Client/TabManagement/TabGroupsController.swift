@@ -79,6 +79,30 @@ final class TabGroupsController {
         }
     }
 
+    func moveTabs(_ tabIDs: [TabUUID], to groupID: UUID?, normalTabIDs: [TabUUID]) {
+        guard groupID == nil || state.groups.contains(where: { $0.id == groupID }) else { return }
+        let movingIDs = orderedUnique(tabIDs.filter { normalTabIDs.contains($0) })
+        guard !movingIDs.isEmpty else { return }
+
+        let movingSet = Set(movingIDs)
+        var newState = state
+        for index in newState.groups.indices {
+            newState.groups[index].tabIDs.removeAll { movingSet.contains($0) }
+            if let lastID = newState.groups[index].lastSelectedTabID,
+               movingSet.contains(lastID) {
+                newState.groups[index].lastSelectedTabID = newState.groups[index].tabIDs.first
+            }
+        }
+        if let groupID, let index = newState.groups.firstIndex(where: { $0.id == groupID }) {
+            newState.groups[index].tabIDs.append(contentsOf: movingIDs)
+            newState.groups[index].lastSelectedTabID = movingIDs.last
+        } else {
+            newState.lastSelectedUngroupedTabID = movingIDs.last
+        }
+        newState.selectedGroupID = groupID
+        state = newState
+    }
+
     func removeTab(_ tabID: TabUUID) {
         removeMembership(for: [tabID])
         if state.lastSelectedUngroupedTabID == tabID { state.lastSelectedUngroupedTabID = nil }

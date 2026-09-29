@@ -34,6 +34,27 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b"]), ["a", "b"])
     }
 
+    func testMovingSelectedTabsChangesMembershipAndDestinationOnce() {
+        let controller = TabGroupsController()
+        let firstID = controller.createGroup(name: "First", tabIDs: ["a", "b"], normalTabIDs: ["a", "b", "c"])
+        let secondID = controller.createGroup(name: "Second", normalTabIDs: ["a", "b", "c"])
+        controller.selectGroup(id: firstID)
+        var changeCount = 0
+        controller.onChange = { _ in changeCount += 1 }
+
+        controller.moveTabs(["a", "b", "a", "invalid"], to: secondID, normalTabIDs: ["a", "b", "c"])
+
+        XCTAssertEqual(changeCount, 1)
+        XCTAssertEqual(controller.state.selectedGroupID, secondID)
+        XCTAssertEqual(controller.state.groups.first { $0.id == firstID }?.tabIDs, [])
+        XCTAssertEqual(controller.state.groups.first { $0.id == secondID }?.tabIDs, ["a", "b"])
+
+        controller.moveTabs(["a"], to: nil, normalTabIDs: ["a", "b", "c"])
+
+        XCTAssertNil(controller.state.selectedGroupID)
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b", "c"]), ["a", "c"])
+    }
+
     func testReconcileRemovesClosedTabsAndExcludesPrivateTabs() {
         let controller = TabGroupsController()
         let groupID = controller.createGroup(name: "Work",
