@@ -289,6 +289,7 @@ final class TabCell: UICollectionViewCell,
 
     func setTabSelectionMode(_ isSelectingTabs: Bool, theme: Theme?) {
         hidesSelectedBorder = isSelectingTabs
+        closeButton.isHidden = isSelectingTabs
         guard let theme else { return }
         updateBorder(theme: theme, isSelected: isSelectedTab, isPrivate: tabModel?.isPrivate ?? false)
     }

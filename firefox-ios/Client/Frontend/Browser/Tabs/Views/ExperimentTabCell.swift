@@ -374,6 +374,9 @@ final class ExperimentTabCell: UICollectionViewCell, ThemeApplicable, ReusableCe
 
     func setTabSelectionMode(_ isSelectingTabs: Bool, theme: Theme?) {
         hidesSelectedBorder = isSelectingTabs
+        closeButton.isHidden = isSelectingTabs
+        closeButtonBlurView.isHidden = isSelectingTabs
+        closeButtonImageOverlay.isHidden = isSelectingTabs
         guard isSelectedTab, let theme else { return }
         setSelectedState(isPrivate: tabModel?.isPrivate ?? false, theme: theme)
     }
