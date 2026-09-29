@@ -5,6 +5,7 @@
 import Common
 import Redux
 import SwiftUI
+import UIKit
 
 extension TabTrayViewController {
     private var normalTabPanel: TabDisplayPanelViewController? {
@@ -51,6 +52,17 @@ extension TabTrayViewController {
             ])
             host.didMove(toParent: self)
         }
+        let backdrop = TabGroupsSelectionBackdropView()
+        backdrop.translatesAutoresizingMaskIntoConstraints = false
+        backdrop.isHidden = true
+        view.insertSubview(backdrop, belowSubview: bottomHost.view)
+        NSLayoutConstraint.activate([
+            backdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backdrop.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backdrop.topAnchor.constraint(equalTo: bottomHost.view.topAnchor, constant: -56),
+            backdrop.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        tabGroupsSelectionBackdrop = backdrop
         refreshTabGroupsUI()
     }
 
@@ -114,6 +126,7 @@ extension TabTrayViewController {
             self?.handleTabGroupsBarAction(action)
         })
         topHost.view.isHidden = tabTrayState.selectedPanel != .tabs
+        tabGroupsSelectionBackdrop?.isHidden = !isSelectingTabs
     }
 
     private func handleTabGroupsBarAction(_ action: TabGroupsTrayBarAction) {
@@ -349,4 +362,25 @@ extension TabTrayViewController {
         }
     }
 
+}
+
+private final class TabGroupsSelectionBackdropView: UIVisualEffectView {
+    private let fadeMask = CAGradientLayer()
+
+    init() {
+        super.init(effect: UIBlurEffect(style: .systemMaterial))
+        isUserInteractionEnabled = false
+        fadeMask.colors = [UIColor.clear.cgColor, UIColor.white.cgColor, UIColor.white.cgColor]
+        fadeMask.locations = [0, 0.45, 1]
+        layer.mask = fadeMask
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        fadeMask.frame = bounds
+    }
 }

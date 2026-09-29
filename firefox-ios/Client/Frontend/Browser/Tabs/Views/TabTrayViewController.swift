@@ -73,6 +73,7 @@ final class TabTrayViewController: UIViewController,
     var tabGroupsController: TabGroupsController?
     var tabGroupsTopHost: UIHostingController<AnyView>?
     var tabGroupsBottomHost: UIHostingController<AnyView>?
+    var tabGroupsSelectionBackdrop: UIView?
     var tabGroupsPickerHost: UIHostingController<AnyView>?
     var isAddingTabToEmptyGroup = false
     private lazy var themeAnimator = TabTrayThemeAnimator()
