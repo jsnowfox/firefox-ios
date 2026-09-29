@@ -19,14 +19,46 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
 
     var body: some View {
         ZStack {
-            HStack {
-                Spacer()
-                moreControl
+            if let selectedTabCount = viewModel.selectedTabCount {
+                selectionHeader(selectedTabCount)
+            } else {
+                HStack {
+                    Spacer()
+                    moreControl
+                }
+                destinationButton
             }
-            destinationButton
         }
         .padding(.horizontal, 20)
         .frame(height: TabGroupsTrayBarMetrics.topHeight)
+    }
+    private func selectionHeader(_ count: Int) -> some View {
+        ZStack {
+            HStack {
+                Spacer()
+                Button {
+                    onAction(.finishSelection)
+                } label: {
+                    Image("checkmarkLarge")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
+                        .foregroundStyle(viewModel.colors.onEmphasis)
+                        .frame(width: TabGroupsTrayBarMetrics.buttonSize,
+                               height: TabGroupsTrayBarMetrics.buttonSize)
+                        .tabGroupsDoneStyle(tint: viewModel.colors.emphasis)
+                        .accessibilityHidden(true)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Done selecting tabs")
+                .accessibilityIdentifier("tabGroupsTray.finishSelection")
+            }
+
+            Text(count == 0 ? "Select Tabs" : "\(count) Selected")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(viewModel.colors.primaryText)
+        }
     }
 
     private var destinationButton: some View {
@@ -66,6 +98,7 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("tabGroupsTray.destination")
     }
+
 }
 
 extension TabGroupsTrayTopBar where MoreControl == TabGroupsTrayMoreButton {
@@ -115,6 +148,50 @@ struct TabGroupsTrayBottomBar: View {
     let onAction: (TabGroupsTrayBarAction) -> Void
 
     var body: some View {
+        Group {
+            if let selectedTabCount = viewModel.selectedTabCount {
+                HStack(spacing: 12) {
+                    selectionButton("New Group",
+                                    systemImage: "folder.badge.plus",
+                                    action: .createGroupFromSelection,
+                                    identifier: "createGroupFromSelection",
+                                    selectedTabCount: selectedTabCount)
+                    selectionButton("Close Tabs",
+                                    systemImage: "xmark.rectangle",
+                                    action: .closeSelectedTabs,
+                                    identifier: "closeSelectedTabs",
+                                    selectedTabCount: selectedTabCount)
+                }
+            } else {
+                standardBar
+            }
+        }
+        .foregroundStyle(viewModel.colors.primaryText)
+        .padding(.horizontal, 20)
+        .frame(height: TabGroupsTrayBarMetrics.bottomHeight)
+    }
+
+    private func selectionButton(_ title: String,
+                                 systemImage: String,
+                                 action: TabGroupsTrayBarAction,
+                                 identifier: String,
+                                 selectedTabCount: Int) -> some View {
+        Button {
+            onAction(action)
+        } label: {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .tabGroupsGlass(in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(selectedTabCount == 0)
+        .opacity(selectedTabCount == 0 ? 0.5 : 1)
+        .accessibilityIdentifier("tabGroupsTray.\(identifier)")
+    }
+
+    private var standardBar: some View {
         HStack(spacing: 12) {
             addButton
             Spacer(minLength: 0)
@@ -122,9 +199,6 @@ struct TabGroupsTrayBottomBar: View {
             Spacer(minLength: 0)
             doneButton
         }
-        .foregroundStyle(viewModel.colors.primaryText)
-        .padding(.horizontal, 20)
-        .frame(height: TabGroupsTrayBarMetrics.bottomHeight)
     }
 
     private var addButton: some View {

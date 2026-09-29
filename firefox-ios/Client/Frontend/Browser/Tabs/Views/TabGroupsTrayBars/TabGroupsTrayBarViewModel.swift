@@ -42,6 +42,7 @@ struct TabGroupsTrayBarViewModel: Equatable {
     var colors: Colors = .system
     var groupEmoji: String?
     var groupColor: Color?
+    var selectedTabCount: Int?
 
     var tabsTitle: String { tabCountTitle }
 }
@@ -50,6 +51,9 @@ enum TabGroupsTrayBarAction: Equatable {
     case openDestinationPicker
     case openMoreMenu
     case addTab
+    case finishSelection
+    case createGroupFromSelection
+    case closeSelectedTabs
     case selectPanel(TabGroupsTrayBarViewModel.Panel)
     case done
 }
