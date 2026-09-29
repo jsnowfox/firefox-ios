@@ -150,24 +150,34 @@ struct TabGroupsTrayBottomBar: View {
     var body: some View {
         Group {
             if let selectedTabCount = viewModel.selectedTabCount {
-                HStack(spacing: 12) {
-                    selectionButton("New Group",
-                                    systemImage: "folder.badge.plus",
-                                    action: .createGroupFromSelection,
-                                    identifier: "createGroupFromSelection",
-                                    selectedTabCount: selectedTabCount)
-                    selectionButton("Close Tabs",
-                                    systemImage: "xmark.rectangle",
-                                    action: .closeSelectedTabs,
-                                    identifier: "closeSelectedTabs",
-                                    selectedTabCount: selectedTabCount)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        selectionButton("New Group",
+                                        systemImage: "folder.badge.plus",
+                                        action: .createGroupFromSelection,
+                                        identifier: "createGroupFromSelection",
+                                        selectedTabCount: selectedTabCount)
+                        selectionButton("Move to Group",
+                                        systemImage: "folder",
+                                        action: .moveSelectionToGroup,
+                                        identifier: "moveSelectionToGroup",
+                                        selectedTabCount: selectedTabCount)
+                        selectionButton("Close Tabs",
+                                        systemImage: "xmark.rectangle",
+                                        action: .closeSelectedTabs,
+                                        identifier: "closeSelectedTabs",
+                                        selectedTabCount: selectedTabCount,
+                                        role: .destructive)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
                 }
+                .background(Color(uiColor: .systemGroupedBackground), in: Capsule())
             } else {
-                standardBar
+                standardBar.padding(.horizontal, 20)
             }
         }
         .foregroundStyle(viewModel.colors.primaryText)
-        .padding(.horizontal, 20)
         .frame(height: TabGroupsTrayBarMetrics.bottomHeight)
     }
 
@@ -175,14 +185,17 @@ struct TabGroupsTrayBottomBar: View {
                                  systemImage: String,
                                  action: TabGroupsTrayBarAction,
                                  identifier: String,
-                                 selectedTabCount: Int) -> some View {
-        Button {
+                                 selectedTabCount: Int,
+                                 role: ButtonRole? = nil) -> some View {
+        Button(role: role) {
             onAction(action)
         } label: {
             Label(title, systemImage: systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .frame(maxWidth: .infinity)
+                .foregroundStyle(role == .destructive ? Color(uiColor: .systemRed) : Color(uiColor: .label))
+                .padding(.horizontal, 16)
                 .frame(height: 40)
+                .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
                 .tabGroupsGlass(in: Capsule())
         }
         .buttonStyle(.plain)

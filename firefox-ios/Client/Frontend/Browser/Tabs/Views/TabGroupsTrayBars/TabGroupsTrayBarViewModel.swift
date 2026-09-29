@@ -53,6 +53,7 @@ enum TabGroupsTrayBarAction: Equatable {
     case addTab
     case finishSelection
     case createGroupFromSelection
+    case moveSelectionToGroup
     case closeSelectedTabs
     case selectPanel(TabGroupsTrayBarViewModel.Panel)
     case done

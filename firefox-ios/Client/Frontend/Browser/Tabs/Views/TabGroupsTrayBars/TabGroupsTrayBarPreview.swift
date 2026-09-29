@@ -85,6 +85,9 @@ private struct TabGroupsTrayBarPreviewHost: View {
         case .createGroupFromSelection:
             selectedTabCount = nil
             isGroupSelected = true
+        case .moveSelectionToGroup:
+            selectedTabCount = nil
+            isGroupSelected = true
         case .closeSelectedTabs:
             tabCount -= selectedTabCount ?? 0
             selectedTabCount = nil
