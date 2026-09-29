@@ -76,6 +76,8 @@ extension TabTrayViewController {
             return
         }
         let selectedGroup = controller.state.groups.first { $0.id == controller.state.selectedGroupID }
+        let displayView = normalTabPanel?.tabDisplayView
+        let isSelectingTabs = tabTrayState.selectedPanel == .tabs && displayView?.isSelectingTabs == true
         let selectedPanel: TabGroupsTrayBarViewModel.Panel = switch tabTrayState.selectedPanel {
         case .tabs: .tabs
         case .privateTabs: .privateTabs
@@ -90,10 +92,11 @@ extension TabTrayViewController {
             syncedTitle: "Sync",
             doneAccessibilityLabel: "Done",
             groupEmoji: selectedGroup?.emoji,
-            groupColor: selectedGroup?.color.swiftUIColor)
+            groupColor: selectedGroup?.color.swiftUIColor,
+            selectedTabCount: isSelectingTabs ? displayView?.selectedTabIDs.count : nil)
         let menuModel = TabGroupsContextMenuViewModel(
             showsGroupActions: selectedGroup != nil,
-            selectTabsTitle: normalTabPanel?.tabDisplayView.isSelectingTabs == true ? "Done Selecting" : "Select Tabs",
+            selectTabsTitle: "Select Tabs",
             arrangeTabsTitle: "Arrange Tabs By",
             customizeGroupTitle: "Customize Group",
             closeTabsTitle: "Close Tabs",
@@ -125,6 +128,7 @@ extension TabTrayViewController {
             }
             newTabButtonTapped()
         case .selectPanel(let panel):
+            normalTabPanel?.tabDisplayView.isSelectingTabs = false
             let panelType: TabTrayPanelType = switch panel {
             case .tabs: .tabs
             case .privateTabs: .privateTabs
@@ -133,8 +137,26 @@ extension TabTrayViewController {
             didSelectSection(panelType: panelType)
         case .done:
             doneButtonTapped()
-        case .finishSelection, .createGroupFromSelection, .closeSelectedTabs:
-            break
+        case .finishSelection:
+            normalTabPanel?.tabDisplayView.isSelectingTabs = false
+            refreshTabGroupsUI()
+        case .createGroupFromSelection:
+            guard let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs,
+                  !selectedIDs.isEmpty else { return }
+            showGroupEditor(tabIDs: Array(selectedIDs))
+        case .closeSelectedTabs:
+            guard let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs,
+                  !selectedIDs.isEmpty,
+                  let tabManager else { return }
+            let tabs = tabManager.normalTabs.filter { selectedIDs.contains($0.tabUUID) }
+            let alert = UIAlertController(title: "Close \(tabs.count) Tabs?", message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Close Tabs", style: .destructive) { [weak self] _ in
+                self?.normalTabPanel?.tabDisplayView.isSelectingTabs = false
+                tabManager.removeTabs(tabs)
+                self?.refreshTabGroupsUI()
+            })
+            present(alert, animated: true)
         }
     }
 
@@ -243,6 +265,7 @@ extension TabTrayViewController {
                 self.normalTabPanel?.tabDisplayView.isSelectingTabs = false
             }
             self.dismiss(animated: true)
+            self.refreshTabGroupsUI()
         })
         let host = UIHostingController(rootView: editor)
         host.modalPresentationStyle = .pageSheet
@@ -255,7 +278,7 @@ extension TabTrayViewController {
         switch action {
         case .selectTabs:
             if let displayView = normalTabPanel?.tabDisplayView {
-                displayView.isSelectingTabs.toggle()
+                displayView.isSelectingTabs = true
                 refreshTabGroupsUI()
             }
         case .arrangeTabsByOriginalOrder:
