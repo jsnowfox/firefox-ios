@@ -45,7 +45,10 @@ struct NavigationToolbarContainerModel: Equatable {
                 a11yCustomActionName: action.a11yCustomActionName,
                 a11yCustomAction: NavigationToolbarContainerModel.getA11yCustomAction(action: action,
                                                                                       windowUUID: windowUUID),
-                hasLongPressAction: action.canPerformLongPressAction(isShowingTopTabs: state.isShowingTopTabs),
+                hasLongPressAction: !(TabGroupsFeatureFlag.isEnabled && action.actionType == .tabs) &&
+                    action.canPerformLongPressAction(isShowingTopTabs: state.isShowingTopTabs),
+                hasContextMenu: TabGroupsFeatureFlag.isEnabled && action.actionType == .tabs &&
+                    !state.isShowingTopTabs,
                 previousTabScreenshot: action.previousTabScreenshot,
                 nextTabScreenshot: action.nextTabScreenshot,
                 onSelected: NavigationToolbarContainerModel.getOnSelected(action: action, windowUUID: windowUUID),
@@ -83,13 +86,15 @@ struct NavigationToolbarContainerModel: Equatable {
     private static func getOnLongPress(action: ToolbarActionConfiguration,
                                        state: ToolbarState,
                                        windowUUID: WindowUUID) -> ((UIButton) -> Void)? {
-        return action.canPerformLongPressAction(isShowingTopTabs: state.isShowingTopTabs) ? { button in
+        guard !(TabGroupsFeatureFlag.isEnabled && action.actionType == .tabs),
+              action.canPerformLongPressAction(isShowingTopTabs: state.isShowingTopTabs) else { return nil }
+        return { button in
             let action = ToolbarMiddlewareAction(buttonType: action.actionType,
                                                  buttonTapped: button,
                                                  gestureType: .longPress,
                                                  windowUUID: windowUUID,
                                                  actionType: ToolbarMiddlewareActionType.didTapButton)
             store.dispatch(action)
-        } : nil
+        }
     }
 }

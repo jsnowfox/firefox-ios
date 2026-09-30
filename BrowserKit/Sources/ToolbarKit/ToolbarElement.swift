@@ -73,6 +73,8 @@ public struct ToolbarElement: Equatable {
     /// this is only used to compare for equality as closures can't be compared
     let hasLongPressAction: Bool
 
+    let hasContextMenu: Bool
+
     /// Screenshot of the tab preceding the currently selected tab, used to render the stacked tab button.
     let previousTabScreenshot: UIImage?
 
@@ -112,6 +114,7 @@ public struct ToolbarElement: Equatable {
                 a11yCustomActionName: String? = nil,
                 a11yCustomAction: (() -> Void)? = nil,
                 hasLongPressAction: Bool,
+                hasContextMenu: Bool = false,
                 previousTabScreenshot: UIImage? = nil,
                 nextTabScreenshot: UIImage? = nil,
                 onSelected: ((UIButton) -> Void)?,
@@ -143,6 +146,7 @@ public struct ToolbarElement: Equatable {
         self.a11yCustomActionName = a11yCustomActionName
         self.a11yCustomAction = a11yCustomAction
         self.hasLongPressAction = hasLongPressAction
+        self.hasContextMenu = hasContextMenu
         self.menuElements = menuElements
     }
 
@@ -165,6 +169,7 @@ public struct ToolbarElement: Equatable {
         lhs.previousTabScreenshot == rhs.previousTabScreenshot &&
         lhs.nextTabScreenshot == rhs.nextTabScreenshot &&
         lhs.hasLongPressAction == rhs.hasLongPressAction &&
+        lhs.hasContextMenu == rhs.hasContextMenu &&
         lhs.menuElements == rhs.menuElements &&
         lhs.a11yLabel == rhs.a11yLabel &&
         lhs.a11yHint == rhs.a11yHint &&

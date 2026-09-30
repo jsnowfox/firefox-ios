@@ -8,6 +8,9 @@ import Common
 public protocol BrowserNavigationToolbarDelegate: AnyObject {
     @MainActor
     func configureContextualHint(for button: UIButton, with contextualHintType: String)
+
+    @MainActor
+    func configureContextMenu(for button: UIButton)
 }
 
 /// Navigation toolbar implementation.
@@ -97,6 +100,10 @@ public final class BrowserNavigationToolbar: UIView,
 
             if let contextualHintType = toolbarElement.contextualHintType {
                 toolbarDelegate?.configureContextualHint(for: button, with: contextualHintType)
+            }
+
+            if toolbarElement.hasContextMenu {
+                toolbarDelegate?.configureContextMenu(for: button)
             }
 
             // Only add the constraints to new buttons

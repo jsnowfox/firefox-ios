@@ -2857,7 +2857,7 @@ class BrowserViewController: UIViewController,
         case .backForwardList:
             navigationHandler?.showBackForwardList()
         case .tabsLongPressActions:
-            presentTabsLongPressAction(from: view)
+            presentTabsLongPressAction(from: state.buttonTapped ?? view)
         case .locationViewLongPressAction:
             presentLocationViewActionSheet(from: addressToolbarContainer)
         case .trackingProtectionDetails:
@@ -4143,6 +4143,10 @@ class BrowserViewController: UIViewController,
         default:
             return
         }
+    }
+
+    func configureContextMenu(for button: UIButton) {
+        configureTabsContextMenu(for: button)
     }
 
     func addressToolbarDidBeginEditing(searchTerm: String, shouldShowSuggestions: Bool) {

@@ -479,6 +479,7 @@ struct BrowserViewControllerState: ScreenState {
         return state
             .resetTransientState()
             .copy(displayView: .tabsLongPressActions)
+            .copy(buttonTapped: action.buttonTapped)
             .copy(microsurveyState: MicrosurveyPromptState.reducer.legacyReducer(state.microsurveyState, action))
             .copy(autoTranslatePromptState: AutoTranslatePromptState.reducer
                 .legacyReducer(state.autoTranslatePromptState, action))

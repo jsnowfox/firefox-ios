@@ -384,7 +384,8 @@ final class ToolbarMiddleware {
             store.dispatch(action)
         case .tabs:
             toolbarTelemetry.tabTrayButtonLongPressed(isPrivate: toolbarState.isPrivateMode)
-            let action = GeneralBrowserAction(windowUUID: action.windowUUID,
+            let action = GeneralBrowserAction(buttonTapped: action.buttonTapped,
+                                              windowUUID: action.windowUUID,
                                               actionType: GeneralBrowserActionType.showTabsLongPressActions)
             store.dispatch(action)
         case .locationView:

@@ -10,6 +10,9 @@ import UIKit
 protocol NavigationToolbarContainerDelegate: AnyObject {
     @MainActor
     func configureContextualHint(for: UIButton, with contextualHintType: String)
+
+    @MainActor
+    func configureContextMenu(for button: UIButton)
 }
 
 final class NavigationToolbarContainer: UIView, ThemeApplicable, StoreSubscriber {
@@ -124,6 +127,10 @@ final class NavigationToolbarContainer: UIView, ThemeApplicable, StoreSubscriber
 }
 
 extension NavigationToolbarContainer: BrowserNavigationToolbarDelegate {
+    func configureContextMenu(for button: UIButton) {
+        toolbarDelegate?.configureContextMenu(for: button)
+    }
+
     func configureContextualHint(for button: UIButton, with contextualHintType: String) {
         guard let toolbarState = store.state.componentState(ToolbarState.self, for: .toolbar, window: windowUUID)
         else { return }
