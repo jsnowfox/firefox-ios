@@ -9701,6 +9701,191 @@ extension String {
             tableName: "TabsTray",
             value: "Close Tabs",
             comment: "Action to close selected tabs")
+        public static let Mobile = MZLocalizedString(
+            key: "TabGroups.Mobile.v158",
+            tableName: "TabsTray",
+            value: "Mobile",
+            comment: "Name of the ungrouped tabs destination")
+        public static let PickerTitle = MZLocalizedString(
+            key: "TabGroups.PickerTitle.v158",
+            tableName: "TabsTray",
+            value: "Tab Groups",
+            comment: "Title of the tab group picker")
+        public static let Done = MZLocalizedString(
+            key: "TabGroups.Done.v158",
+            tableName: "TabsTray",
+            value: "Done",
+            comment: "Action that closes the tab group picker or tab tray")
+        public static let MoreOptions = MZLocalizedString(
+            key: "TabGroups.MoreOptions.v158",
+            tableName: "TabsTray",
+            value: "More tab options",
+            comment: "Accessibility label for the tab tray menu")
+        public static let TabCountOne = MZLocalizedString(
+            key: "TabGroups.TabCountOne.v158",
+            tableName: "TabsTray",
+            value: "%d Tab",
+            comment: "Tab count when there is exactly one tab; %d is the count")
+        public static let TabCountOther = MZLocalizedString(
+            key: "TabGroups.TabCountOther.v158",
+            tableName: "TabsTray",
+            value: "%d Tabs",
+            comment: "Tab count when there are multiple tabs; %d is the count")
+        public static let ArrangeTabsBy = MZLocalizedString(
+            key: "TabGroups.ArrangeTabsBy.v158",
+            tableName: "TabsTray",
+            value: "Arrange Tabs By",
+            comment: "Menu heading for tab sort options")
+        public static let CustomizeGroup = MZLocalizedString(
+            key: "TabGroups.CustomizeGroup.v158",
+            tableName: "TabsTray",
+            value: "Customize Group",
+            comment: "Action and editor title for changing a group")
+        public static let Ungroup = MZLocalizedString(
+            key: "TabGroups.Ungroup.v158",
+            tableName: "TabsTray",
+            value: "Ungroup",
+            comment: "Action that removes a group but retains its tabs")
+        public static let TabSettings = MZLocalizedString(
+            key: "TabGroups.TabSettings.v158",
+            tableName: "TabsTray",
+            value: "Tab Settings",
+            comment: "Action that opens tab settings")
+        public static let NewEmptyGroup = MZLocalizedString(
+            key: "TabGroups.NewEmptyGroup.v158",
+            tableName: "TabsTray",
+            value: "New Empty Tab Group",
+            comment: "Action that creates an empty group")
+        public static let NewGroupWithOneTab = MZLocalizedString(
+            key: "TabGroups.NewGroupWithOneTab.v158",
+            tableName: "TabsTray",
+            value: "New Tab Group with %d Tab",
+            comment: "Action that creates a group with one tab; %d is the count")
+        public static let NewGroupWithMultipleTabs = MZLocalizedString(
+            key: "TabGroups.NewGroupWithMultipleTabs.v158",
+            tableName: "TabsTray",
+            value: "New Tab Group with %d Tabs",
+            comment: "Action that creates a group with multiple tabs; %d is the count")
+        public static let CloseTabsPromptOne = MZLocalizedString(
+            key: "TabGroups.CloseTabsPromptOne.v158",
+            tableName: "TabsTray",
+            value: "Close %d Tab?",
+            comment: "Confirmation prompt for closing one tab; %d is the count")
+        public static let CloseTabsPromptOther = MZLocalizedString(
+            key: "TabGroups.CloseTabsPromptOther.v158",
+            tableName: "TabsTray",
+            value: "Close %d Tabs?",
+            comment: "Confirmation prompt for closing multiple tabs; %d is the count")
+        public static let MoveTabsPromptOne = MZLocalizedString(
+            key: "TabGroups.MoveTabsPromptOne.v158",
+            tableName: "TabsTray",
+            value: "Move %d Tab To",
+            comment: "Title of the destination chooser for one tab; %d is the count")
+        public static let MoveTabsPromptOther = MZLocalizedString(
+            key: "TabGroups.MoveTabsPromptOther.v158",
+            tableName: "TabsTray",
+            value: "Move %d Tabs To",
+            comment: "Title of the destination chooser for multiple tabs; %d is the count")
+        public static let CreateAnotherGroup = MZLocalizedString(
+            key: "TabGroups.CreateAnotherGroup.v158",
+            tableName: "TabsTray",
+            value: "Create another group to move these tabs.",
+            comment: "Empty destination chooser message")
+        public static let NewTabGroup = MZLocalizedString(
+            key: "TabGroups.NewTabGroup.v158",
+            tableName: "TabsTray",
+            value: "New Tab Group",
+            comment: "Action and editor title for creating a group")
+        public static let MoveToTabGroup = MZLocalizedString(
+            key: "TabGroups.MoveToTabGroup.v158",
+            tableName: "TabsTray",
+            value: "Move to Tab Group",
+            comment: "Context menu action for moving one tab")
+        public static let GroupName = MZLocalizedString(
+            key: "TabGroups.GroupName.v158",
+            tableName: "TabsTray",
+            value: "Group name",
+            comment: "Placeholder for the tab group name field")
+        public static let Name = MZLocalizedString(
+            key: "TabGroups.Name.v158",
+            tableName: "TabsTray",
+            value: "Name",
+            comment: "Heading for the tab group name field")
+        public static let Icon = MZLocalizedString(
+            key: "TabGroups.Icon.v158",
+            tableName: "TabsTray",
+            value: "Icon",
+            comment: "Heading for the tab group icon picker")
+        public static let Color = MZLocalizedString(
+            key: "TabGroups.Color.v158",
+            tableName: "TabsTray",
+            value: "Color",
+            comment: "Heading for the tab group color picker")
+        public static let Cancel = MZLocalizedString(
+            key: "TabGroups.Cancel.v158",
+            tableName: "TabsTray",
+            value: "Cancel",
+            comment: "Action that cancels a tab group operation")
+        public static let Save = MZLocalizedString(
+            key: "TabGroups.Save.v158",
+            tableName: "TabsTray",
+            value: "Save",
+            comment: "Action that saves changes to a tab group")
+        public static let Create = MZLocalizedString(
+            key: "TabGroups.Create.v158",
+            tableName: "TabsTray",
+            value: "Create",
+            comment: "Action that creates a tab group")
+        public static let IconAccessibility = MZLocalizedString(
+            key: "TabGroups.IconAccessibility.v158",
+            tableName: "TabsTray",
+            value: "%@ icon",
+            comment: "Accessibility label for a selectable group icon; %@ is the icon")
+        public static let ColorAccessibility = MZLocalizedString(
+            key: "TabGroups.ColorAccessibility.v158",
+            tableName: "TabsTray",
+            value: "%@ color",
+            comment: "Accessibility label for a selectable group color; %@ is its name")
+        public static let ColorRed = MZLocalizedString(
+            key: "TabGroups.ColorRed.v158",
+            tableName: "TabsTray",
+            value: "Red",
+            comment: "Name of the red tab group color")
+        public static let ColorOrange = MZLocalizedString(
+            key: "TabGroups.ColorOrange.v158",
+            tableName: "TabsTray",
+            value: "Orange",
+            comment: "Name of the orange tab group color")
+        public static let ColorYellow = MZLocalizedString(
+            key: "TabGroups.ColorYellow.v158",
+            tableName: "TabsTray",
+            value: "Yellow",
+            comment: "Name of the yellow tab group color")
+        public static let ColorGreen = MZLocalizedString(
+            key: "TabGroups.ColorGreen.v158",
+            tableName: "TabsTray",
+            value: "Green",
+            comment: "Name of the green tab group color")
+        public static let ColorTeal = MZLocalizedString(
+            key: "TabGroups.ColorTeal.v158",
+            tableName: "TabsTray",
+            value: "Teal",
+            comment: "Name of the teal tab group color")
+        public static let ColorBlue = MZLocalizedString(
+            key: "TabGroups.ColorBlue.v158",
+            tableName: "TabsTray",
+            value: "Blue",
+            comment: "Name of the blue tab group color")
+        public static let ColorPurple = MZLocalizedString(
+            key: "TabGroups.ColorPurple.v158",
+            tableName: "TabsTray",
+            value: "Purple",
+            comment: "Name of the purple tab group color")
+        public static let ColorPink = MZLocalizedString(
+            key: "TabGroups.ColorPink.v158",
+            tableName: "TabsTray",
+            value: "Pink",
+            comment: "Name of the pink tab group color")
     }
 }
 

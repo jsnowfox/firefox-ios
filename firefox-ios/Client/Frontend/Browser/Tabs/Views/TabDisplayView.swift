@@ -71,6 +71,7 @@ final class TabDisplayView: UIView,
     private(set) var selectedTabIDs = Set<TabUUID>()
     var onSelectionChange: (() -> Void)?
     var onCreateGroupForTab: ((TabUUID) -> Void)?
+    var onMoveTabToGroup: ((TabUUID, UUID?) -> Void)?
     private var performingChainedOperations = false
     private var tabsSectionManager: TabsSectionManager
     private let windowUUID: WindowUUID
@@ -84,49 +85,52 @@ final class TabDisplayView: UIView,
     lazy var dataSource =
     TabDisplayDiffableDataSource(
         collectionView: collectionView,
-        cellProvider: { [weak self] (collectionView, indexPath, sectionItem) ->
-            UICollectionViewCell in
+        cellProvider: { [weak self] collectionView, indexPath, sectionItem in
             guard let self else { return UICollectionViewCell() }
-
             switch sectionItem {
             case .tab(let tab):
-                let newTabTitle = tab.url == nil ? String.TabsTray.TabsSelectorBlankTabsTitle : nil
-                if isTabTrayUIExperimentsEnabled {
-                    guard let cell = collectionView.dequeueReusableCell(
-                        withReuseIdentifier: ExperimentTabCell.cellIdentifier,
-                        for: indexPath
-                    ) as? ExperimentTabCell else { return UICollectionViewCell() }
-
-                    let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
-                    cell.configure(with: tab,
-                                   theme: theme,
-                                   delegate: self,
-                                   a11yId: a11yId,
-                                   newTabTitle: newTabTitle,
-                                   selectedGroupColor: selectedGroupColor)
-                    self.configureSelectionAppearance(cell, for: tab.tabUUID)
-                    if tab.tabUUID == self.minimizingTabUUID {
-                        cell.isHidden = true
-                    }
-                    return cell
-                } else {
-                    guard let cell = collectionView.dequeueReusableCell(
-                        withReuseIdentifier: TabCell.cellIdentifier,
-                        for: indexPath
-                    ) as? TabCell else { return UICollectionViewCell() }
-
-                    let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
-                    cell.configure(with: tab,
-                                   theme: theme,
-                                   delegate: self,
-                                   a11yId: a11yId,
-                                   newTabTitle: newTabTitle,
-                                   selectedGroupColor: selectedGroupColor)
-                    self.configureSelectionAppearance(cell, for: tab.tabUUID)
-                    return cell
-                }
+                return self.makeTabCell(for: tab, in: collectionView, at: indexPath)
             }
         })
+
+    private func makeTabCell(for tab: TabModel,
+                             in collectionView: UICollectionView,
+                             at indexPath: IndexPath) -> UICollectionViewCell {
+        let newTabTitle = tab.url == nil ? String.TabsTray.TabsSelectorBlankTabsTitle : nil
+        let a11yId = "\(AccessibilityIdentifiers.TabTray.tabCell)_\(indexPath.section)_\(indexPath.row)"
+        if isTabTrayUIExperimentsEnabled {
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: ExperimentTabCell.cellIdentifier,
+                for: indexPath
+            ) as? ExperimentTabCell else { return UICollectionViewCell() }
+
+            cell.configure(with: tab,
+                           theme: theme,
+                           delegate: self,
+                           a11yId: a11yId,
+                           newTabTitle: newTabTitle,
+                           selectedGroupColor: selectedGroupColor)
+            configureSelectionAppearance(cell, for: tab.tabUUID)
+            if tab.tabUUID == minimizingTabUUID {
+                cell.isHidden = true
+            }
+            return cell
+        }
+
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: TabCell.cellIdentifier,
+            for: indexPath
+        ) as? TabCell else { return UICollectionViewCell() }
+
+        cell.configure(with: tab,
+                       theme: theme,
+                       delegate: self,
+                       a11yId: a11yId,
+                       newTabTitle: newTabTitle,
+                       selectedGroupColor: selectedGroupColor)
+        configureSelectionAppearance(cell, for: tab.tabUUID)
+        return cell
+    }
 
     private var isTabTrayUIExperimentsEnabled: Bool {
         return tabTrayUtils.shouldDisplayExperimentUI()
@@ -212,8 +216,7 @@ final class TabDisplayView: UIView,
         sourceState = state
         refreshGroupFilter()
 
-
-        if tabGroupsController == nil, let scrollState = state.scrollState {
+        if let scrollState = translatedScrollState(state.scrollState) {
             scrollToTab(scrollState)
         }
 
@@ -244,6 +247,13 @@ final class TabDisplayView: UIView,
         dataSource.updateSnapshot(state: displayedState)
         updateSelectionAppearance()
         onSelectionChange?()
+    }
+
+    func translatedScrollState(_ scrollState: TabsPanelState.ScrollState?) -> TabsPanelState.ScrollState? {
+        guard let scrollState,
+              let tabID = sourceState.tabs[safe: scrollState.toIndex]?.tabUUID,
+              let visibleIndex = tabsState.tabs.firstIndex(where: { $0.tabUUID == tabID }) else { return nil }
+        return TabsPanelState.ScrollState(toIndex: visibleIndex, withAnimation: scrollState.withAnimation)
     }
 
     private var selectedGroupColor: UIColor? {
@@ -423,19 +433,18 @@ final class TabDisplayView: UIView,
                                           actionProvider: { [weak self] defaultActions in
             let menu = tabVC.contextActions(defaultActions: defaultActions)
             guard let self, self.panelType == .tabs, let controller = self.tabGroupsController else { return menu }
-            let normalIDs = self.sourceState.tabs.map(\.tabUUID)
-            var destinations: [UIMenuElement] = [UIAction(title: "Mobile") { _ in
-                controller.assignTab(tab.tabUUID, to: nil, normalTabIDs: normalIDs)
+            var destinations: [UIMenuElement] = [UIAction(title: String.TabGroups.Mobile) { [weak self] _ in
+                self?.onMoveTabToGroup?(tab.tabUUID, nil)
             }]
             destinations += controller.state.groups.map { group in
-                UIAction(title: group.name) { _ in
-                    controller.assignTab(tab.tabUUID, to: group.id, normalTabIDs: normalIDs)
+                UIAction(title: group.name) { [weak self] _ in
+                    self?.onMoveTabToGroup?(tab.tabUUID, group.id)
                 }
             }
-            destinations.append(UIAction(title: "New Tab Group") { [weak self] _ in
+            destinations.append(UIAction(title: String.TabGroups.NewTabGroup) { [weak self] _ in
                 self?.onCreateGroupForTab?(tab.tabUUID)
             })
-            let moveMenu = UIMenu(title: "Move to Tab Group", children: destinations)
+            let moveMenu = UIMenu(title: String.TabGroups.MoveToTabGroup, children: destinations)
             return UIMenu(children: menu.children + [moveMenu])
         })
     }

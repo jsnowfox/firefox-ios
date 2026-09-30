@@ -232,7 +232,7 @@ struct TabGroupsTrayBottomBar: View {
     private var panelPicker: some View {
         HStack(spacing: 2) {
             panelButton(viewModel.privateTitle, panel: .privateTabs)
-            panelButton(viewModel.tabsTitle, panel: .tabs)
+            panelButton(viewModel.tabCountTitle, panel: .tabs)
             panelButton(viewModel.syncedTitle, panel: .syncedTabs)
         }
         .padding(3)
@@ -283,13 +283,13 @@ private extension View {
     func tabGroupsGlass<S: Shape>(in shape: S, tint: Color? = nil) -> some View {
         if #available(iOS 26.0, *) {
             if let tint {
-                glassEffect(.regular.tint(tint.opacity(0.18)).interactive(), in: shape)
+                glassEffect(.regular.tint(tint.opacity(TabGroupsTrayBarMetrics.groupTintOpacity)).interactive(), in: shape)
             } else {
                 glassEffect(.regular.interactive(), in: shape)
             }
         } else {
             background(.regularMaterial, in: shape)
-                .background(tint?.opacity(0.18) ?? .clear, in: shape)
+                .background(tint?.opacity(TabGroupsTrayBarMetrics.groupTintOpacity) ?? .clear, in: shape)
         }
     }
 

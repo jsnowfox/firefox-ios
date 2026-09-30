@@ -20,7 +20,6 @@ private struct TabGroupsTrayBarPreviewHost: View {
         let viewModel = TabGroupsTrayBarViewModel(
             destinationTitle: isGroupSelected ? "Houses" : "Mobile",
             isGroupSelected: isGroupSelected,
-            tabCount: tabCount,
             selectedPanel: selectedPanel,
             privateTitle: "Private",
             syncedTitle: "Sync",

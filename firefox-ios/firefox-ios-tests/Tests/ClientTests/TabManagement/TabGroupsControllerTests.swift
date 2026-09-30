@@ -161,4 +161,142 @@ final class TabGroupsControllerTests: XCTestCase {
 
         XCTAssertEqual(configured.numberOfTabs, TabGroupsFeatureFlag.isEnabled ? 1 : 3)
     }
+    func testSwitchingDestinationsRestoresLastSelectedVisibleTab() throws {
+        let controller = TabGroupsController()
+        let normalIDs = ["a", "b", "c"]
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work",
+                                                           tabIDs: ["b", "c"],
+                                                           normalTabIDs: normalIDs))
+        controller.recordSelectedTab("c", normalTabIDs: normalIDs)
+        controller.selectGroup(id: nil)
+        controller.recordSelectedTab("a", normalTabIDs: normalIDs)
+
+        XCTAssertEqual(controller.preferredTabID(normalTabIDs: normalIDs), "a")
+        controller.selectGroup(id: groupID)
+        XCTAssertEqual(controller.preferredTabID(normalTabIDs: normalIDs), "c")
+    }
+
+    func testNewNormalTabStaysInSelectedGroup() throws {
+        let controller = TabGroupsController()
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work", normalTabIDs: ["a"]))
+
+        controller.assignTab("b", to: groupID, normalTabIDs: ["a", "b"])
+        controller.recordSelectedTab("b", normalTabIDs: ["a", "b"])
+
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b"]), ["b"])
+        XCTAssertEqual(controller.preferredTabID(normalTabIDs: ["a", "b"]), "b")
+    }
+}
+
+private final class InMemoryTabGroupsTabManager: MockTabManager {
+    override func removeTabs(_ tabs: [Tab]) {
+        let removedIDs = Set(tabs.map(\.tabUUID))
+        self.tabs.removeAll { removedIDs.contains($0.tabUUID) }
+        normalTabs.removeAll { removedIDs.contains($0.tabUUID) }
+        for id in removedIDs { tabsByUUID.removeValue(forKey: id) }
+    }
+
+    override func addTab(_ request: URLRequest?,
+                         afterTab: Tab?,
+                         zombie: Bool,
+                         isPrivate: Bool) -> Tab {
+        let tab = super.addTab(request, afterTab: afterTab, zombie: zombie, isPrivate: isPrivate)
+        tabs.append(tab)
+        normalTabs.append(tab)
+        tabsByUUID[tab.tabUUID] = tab
+        return tab
+    }
+}
+
+final class TabGroupsTabActionsTests: TabManagerTestsBase {
+    @MainActor
+    private func createInMemoryManager(tabs: [Tab]) -> InMemoryTabGroupsTabManager {
+        let manager = InMemoryTabGroupsTabManager()
+        manager.tabs = tabs
+        manager.normalTabs = tabs
+        manager.tabsByUUID = Dictionary(uniqueKeysWithValues: tabs.map { ($0.tabUUID, $0) })
+        return manager
+    }
+
+    @MainActor
+    func testClosingActiveGroupTabSelectsAnotherTabInThatGroup() throws {
+        let tabs = generateTabs(count: 3)
+        let tabManager = createInMemoryManager(tabs: tabs)
+        tabManager.selectTab(tabs[0])
+        let controller = TabGroupsController()
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work",
+                                                           tabIDs: [tabs[0].tabUUID, tabs[1].tabUUID],
+                                                           normalTabIDs: tabs.map(\.tabUUID)))
+
+        TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs([tabs[0]])
+
+        XCTAssertEqual(controller.state.selectedGroupID, groupID)
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)), [tabs[1].tabUUID])
+        XCTAssertEqual(tabManager.selectedTab?.tabUUID, tabs[1].tabUUID)
+    }
+
+    @MainActor
+    func testClosingAllTabsInGroupOpensBlankTabInGroup() throws {
+        let tabs = generateTabs(count: 2)
+        let tabManager = createInMemoryManager(tabs: tabs)
+        tabManager.selectTab(tabs[0])
+        let controller = TabGroupsController()
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work",
+                                                           tabIDs: [tabs[0].tabUUID],
+                                                           normalTabIDs: tabs.map(\.tabUUID)))
+
+        TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs([tabs[0]])
+
+        let visibleIDs = controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+        XCTAssertEqual(controller.state.selectedGroupID, groupID)
+        XCTAssertEqual(visibleIDs.count, 1)
+        XCTAssertEqual(tabManager.selectedTab?.tabUUID, visibleIDs.first)
+    }
+
+    @MainActor
+    func testClosingAllMobileTabsOpensBlankMobileTab() throws {
+        let tabs = generateTabs(count: 2)
+        let tabManager = createInMemoryManager(tabs: tabs)
+        tabManager.selectTab(tabs[0])
+        let controller = TabGroupsController()
+        controller.createGroup(name: "Work", tabIDs: [tabs[1].tabUUID], normalTabIDs: tabs.map(\.tabUUID))
+        controller.selectGroup(id: nil)
+
+        TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs([tabs[0]])
+
+        let visibleIDs = controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+        XCTAssertNil(controller.state.selectedGroupID)
+        XCTAssertEqual(visibleIDs.count, 1)
+        XCTAssertEqual(tabManager.selectedTab?.tabUUID, visibleIDs.first)
+    }
+
+    @MainActor
+    func testClosingAllNormalTabsCreatesOneBlankTab() {
+        let tabs = generateTabs(count: 2)
+        let tabManager = createInMemoryManager(tabs: tabs)
+        tabManager.selectTab(tabs[0])
+        let controller = TabGroupsController()
+
+        TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs(tabs)
+
+        XCTAssertEqual(tabManager.normalTabs.count, 1)
+        XCTAssertEqual(tabManager.selectedTab?.tabUUID, tabManager.normalTabs.first?.tabUUID)
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)).count, 1)
+    }
+
+    @MainActor
+    func testMovingActiveTabSwitchesDestinationAndKeepsItSelected() throws {
+        let tabs = generateTabs(count: 2)
+        let tabManager = createInMemoryManager(tabs: tabs)
+        tabManager.selectTab(tabs[0])
+        let controller = TabGroupsController()
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work", normalTabIDs: tabs.map(\.tabUUID)))
+        controller.selectGroup(id: nil)
+
+        TabGroupsTabActions(controller: controller, tabManager: tabManager).moveTab(tabs[0].tabUUID, to: groupID)
+
+        XCTAssertEqual(controller.state.selectedGroupID, groupID)
+        XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)), [tabs[0].tabUUID])
+        XCTAssertEqual(tabManager.selectedTab?.tabUUID, tabs[0].tabUUID)
+    }
 }

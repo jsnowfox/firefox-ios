@@ -32,12 +32,18 @@ extension TabTrayViewController {
         normalTabPanel?.tabDisplayView.onCreateGroupForTab = { [weak self] tabID in
             self?.promptForNewGroup(with: [tabID])
         }
+        normalTabPanel?.tabDisplayView.onMoveTabToGroup = { [weak self] tabID, groupID in
+            guard let self, let controller = self.tabGroupsController, let tabManager = self.tabManager else { return }
+            TabGroupsTabActions(controller: controller, tabManager: tabManager).moveTab(tabID, to: groupID)
+            self.refreshTabGroupsUI()
+        }
 
         let topHost = UIHostingController(rootView: AnyView(EmptyView()))
         let bottomHost = UIHostingController(rootView: AnyView(EmptyView()))
         tabGroupsTopHost = topHost
         tabGroupsBottomHost = bottomHost
-        for (host, height, isTop) in [(topHost, CGFloat(48), true), (bottomHost, CGFloat(56), false)] {
+        for (host, height, isTop) in [(topHost, TabGroupsTrayBarMetrics.topHeight, true),
+                                              (bottomHost, TabGroupsTrayBarMetrics.bottomHeight, false)] {
             addChild(host)
             host.view.backgroundColor = .clear
             host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -59,7 +65,8 @@ extension TabTrayViewController {
         NSLayoutConstraint.activate([
             backdrop.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backdrop.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backdrop.topAnchor.constraint(equalTo: bottomHost.view.topAnchor, constant: -56),
+            backdrop.topAnchor.constraint(equalTo: bottomHost.view.topAnchor,
+                                          constant: -TabGroupsTrayBarMetrics.bottomHeight),
             backdrop.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         tabGroupsSelectionBackdrop = backdrop
@@ -95,25 +102,54 @@ extension TabTrayViewController {
         case .privateTabs: .privateTabs
         case .syncedTabs: .syncedTabs
         }
+        let colors = retrieveTheme().colors
+        let selectedCount = isSelectingTabs ? displayView?.selectedTabIDs.count : nil
+        let selectionTitle = selectedCount.map { count in
+            count == 0 ? String.TabGroups.SelectTabs
+                : tabGroupsCountText(count,
+                                     one: String.TabGroups.SelectedTabCountOne,
+                                     other: String.TabGroups.SelectedTabCountOther)
+        } ?? String.TabGroups.SelectTabs
+        let barColors = TabGroupsTrayBarViewModel.Colors(
+            primaryText: Color(colors.textPrimary),
+            selectedPanelBackground: Color(colors.layer2),
+            emphasis: Color(colors.textPrimary),
+            onEmphasis: Color(colors.textInverted),
+            destructive: Color(colors.textCritical))
         let viewModel = TabGroupsTrayBarViewModel(
-            destinationTitle: selectedGroup?.name ?? "Mobile",
+            destinationTitle: selectedGroup?.name ?? String.TabGroups.Mobile,
             isGroupSelected: selectedGroup != nil,
-            tabCount: controller.visibleTabIDs(normalTabIDs: normalIDs).count,
             selectedPanel: selectedPanel,
-            privateTitle: "Private",
-            syncedTitle: "Sync",
-            doneAccessibilityLabel: "Done",
+            privateTitle: String.TabsTray.TabsSelectorPrivateTabsTitle,
+            syncedTitle: String.TabsTray.TabsSelectorSyncedTabsTitle,
+            doneAccessibilityLabel: String.TabGroups.Done,
+            moreAccessibilityLabel: String.TabGroups.MoreOptions,
+            addTabAccessibilityLabel: String.TabsTray.TabTrayAddTabAccessibilityLabel,
+            tabCountTitle: tabGroupsCountText(
+                controller.visibleTabIDs(normalTabIDs: normalIDs).count,
+                one: String.TabGroups.TabCountOne,
+                other: String.TabGroups.TabCountOther),
+            selectionTitle: selectionTitle,
+            finishSelectionAccessibilityLabel: String.TabGroups.FinishSelection,
+            newGroupTitle: String.TabGroups.NewGroup,
+            moveToGroupTitle: String.TabGroups.MoveToGroup,
+            closeSelectedTabsTitle: String.TabGroups.CloseSelectedTabs,
+            colors: barColors,
             groupEmoji: selectedGroup?.emoji,
             groupColor: selectedGroup?.color.swiftUIColor,
-            selectedTabCount: isSelectingTabs ? displayView?.selectedTabIDs.count : nil)
+            selectedTabCount: selectedCount)
         let menuModel = TabGroupsContextMenuViewModel(
             showsGroupActions: selectedGroup != nil,
-            selectTabsTitle: "Select Tabs",
-            arrangeTabsTitle: "Arrange Tabs By",
-            customizeGroupTitle: "Customize Group",
-            closeTabsTitle: "Close Tabs",
-            ungroupTitle: "Ungroup",
-            tabSettingsTitle: "Tab Settings",
+            selectTabsTitle: String.TabGroups.SelectTabs,
+            arrangeTabsTitle: String.TabGroups.ArrangeTabsBy,
+            customizeGroupTitle: String.TabGroups.CustomizeGroup,
+            closeTabsTitle: String.TabGroups.CloseSelectedTabs,
+            ungroupTitle: String.TabGroups.Ungroup,
+            tabSettingsTitle: String.TabGroups.TabSettings,
+            originalOrderTitle: String.TabGroups.OriginalOrder,
+            titleOrderTitle: String.TabGroups.TitleOrder,
+            moreAccessibilityLabel: String.TabGroups.MoreOptions,
+            colors: barColors,
             sortsByTitle: normalTabPanel?.tabDisplayView.sortTabsByTitle == true)
         topHost.rootView = AnyView(TabGroupsTrayTopBar(viewModel: viewModel, onAction: { [weak self] action in
             self?.handleTabGroupsBarAction(action)
@@ -127,6 +163,10 @@ extension TabTrayViewController {
         })
         topHost.view.isHidden = tabTrayState.selectedPanel != .tabs
         tabGroupsSelectionBackdrop?.isHidden = !isSelectingTabs
+    }
+
+    private func tabGroupsCountText(_ count: Int, one: String, other: String) -> String {
+        String(format: count == 1 ? one : other, count)
     }
 
     private func handleTabGroupsBarAction(_ action: TabGroupsTrayBarAction) {
@@ -164,12 +204,15 @@ extension TabTrayViewController {
                   !selectedIDs.isEmpty,
                   let tabManager else { return }
             let tabs = tabManager.normalTabs.filter { selectedIDs.contains($0.tabUUID) }
-            let alert = UIAlertController(title: "Close \(tabs.count) Tabs?", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Close Tabs", style: .destructive) { [weak self] _ in
+            let title = tabGroupsCountText(
+                tabs.count, one: String.TabGroups.CloseTabsPromptOne, other: String.TabGroups.CloseTabsPromptOther)
+            let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: String.TabGroups.Cancel, style: .cancel))
+            alert.addAction(UIAlertAction(title: String.TabGroups.CloseSelectedTabs, style: .destructive) { [weak self] _ in
                 self?.normalTabPanel?.tabDisplayView.isSelectingTabs = false
-                tabManager.removeTabs(tabs)
-                self?.refreshTabGroupsUI()
+                guard let self, let controller = self.tabGroupsController else { return }
+                TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs(tabs)
+                self.refreshTabGroupsUI()
             })
             present(alert, animated: true)
         }
@@ -180,11 +223,11 @@ extension TabTrayViewController {
               !selectedIDs.isEmpty,
               let controller = tabGroupsController else { return }
 
-        let alert = UIAlertController(title: "Move \(selectedIDs.count) Tabs To",
-                                      message: nil,
-                                      preferredStyle: .actionSheet)
+        let title = tabGroupsCountText(
+            selectedIDs.count, one: String.TabGroups.MoveTabsPromptOne, other: String.TabGroups.MoveTabsPromptOther)
+        let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
         if controller.state.selectedGroupID != nil {
-            alert.addAction(UIAlertAction(title: "Mobile", style: .default) { [weak self] _ in
+            alert.addAction(UIAlertAction(title: String.TabGroups.Mobile, style: .default) { [weak self] _ in
                 self?.moveSelectedTabs(selectedIDs, to: nil)
             })
         }
@@ -194,9 +237,9 @@ extension TabTrayViewController {
             })
         }
         if alert.actions.isEmpty {
-            alert.message = "Create another group to move these tabs."
+            alert.message = String.TabGroups.CreateAnotherGroup
         }
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: String.TabGroups.Cancel, style: .cancel))
         alert.popoverPresentationController?.sourceView = tabGroupsBottomHost?.view ?? view
         alert.popoverPresentationController?.sourceRect = tabGroupsBottomHost?.view.bounds ?? view.bounds
         present(alert, animated: true)
@@ -227,8 +270,15 @@ extension TabTrayViewController {
 
     private func makeTabGroupsPicker() -> AnyView {
         guard let controller = tabGroupsController else { return AnyView(EmptyView()) }
+        let colors = retrieveTheme().colors
+        let pickerColors = TabGroupsPickerViewModel.Colors(
+            background: Color(colors.layer1),
+            cardBackground: Color(colors.layer2),
+            primaryText: Color(colors.textPrimary),
+            accent: Color(colors.actionPrimary),
+            onEmphasis: Color(colors.textInverted))
         let destinations: [TabGroupsPickerViewModel.Destination] = [
-            .init(id: "mobile", title: "Mobile", kind: .device)
+            .init(id: "mobile", title: String.TabGroups.Mobile, kind: .device)
         ] + controller.state.groups.map {
             .init(id: $0.id.uuidString,
                   title: $0.name,
@@ -238,18 +288,24 @@ extension TabTrayViewController {
         }
         let selectedIDs = normalTabPanel?.tabDisplayView.selectedTabIDs ?? []
         let model = TabGroupsPickerViewModel(
-            title: "Tab Groups",
-            doneAccessibilityLabel: "Done",
+            title: String.TabGroups.PickerTitle,
+            colors: pickerColors,
+            doneAccessibilityLabel: String.TabGroups.Done,
             destinations: destinations,
-            privateDestination: .init(id: "private", title: "Private", kind: .privateTabs),
+            privateDestination: .init(id: "private",
+                                      title: String.TabsTray.TabsSelectorPrivateTabsTitle,
+                                      kind: .privateTabs),
             selectedDestinationID: controller.state.selectedGroupID?.uuidString ?? "mobile",
-            createEmptyGroupTitle: "New Empty Tab Group",
-            createWithSelectedTabsTitle: selectedIDs.isEmpty ? nil : "New Tab Group with \(selectedIDs.count) Tabs")
+            createEmptyGroupTitle: String.TabGroups.NewEmptyGroup,
+            createWithSelectedTabsTitle: selectedIDs.isEmpty ? nil
+                : tabGroupsCountText(selectedIDs.count,
+                                     one: String.TabGroups.NewGroupWithOneTab,
+                                     other: String.TabGroups.NewGroupWithMultipleTabs))
         return AnyView(TabGroupsPickerView(viewModel: model) { [weak self] action in
             self?.handleTabGroupsPickerAction(action)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color(uiColor: .systemGroupedBackground)))
+        .background(pickerColors.background))
     }
 
     private func handleTabGroupsPickerAction(_ action: TabGroupsPickerAction) {
@@ -343,16 +399,21 @@ extension TabTrayViewController {
             normalTabPanel?.tabDisplayView.sortTabsByTitle = true
             refreshTabGroupsUI()
         case .customizeGroup:
-            guard let group = controller.state.groups.first(where: { $0.id == controller.state.selectedGroupID }) else { return }
+            guard let group = controller.state.groups.first(where: { $0.id == controller.state.selectedGroupID }) else {
+                return
+            }
             showGroupEditor(group: group)
         case .closeTabs:
             let visibleIDs = Set(controller.visibleTabIDs(normalTabIDs: tabManager.normalTabs.map(\.tabUUID)))
             let tabs = tabManager.normalTabs.filter { visibleIDs.contains($0.tabUUID) }
-            let alert = UIAlertController(title: "Close \(tabs.count) Tabs?", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-            alert.addAction(UIAlertAction(title: "Close Tabs", style: .destructive) { _ in
-                tabManager.removeTabs(tabs)
-                controller.reconcile(normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+            let title = tabGroupsCountText(
+                tabs.count, one: String.TabGroups.CloseTabsPromptOne, other: String.TabGroups.CloseTabsPromptOther)
+            let alert = UIAlertController(title: title, message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: String.TabGroups.Cancel, style: .cancel))
+            alert.addAction(UIAlertAction(title: String.TabGroups.CloseSelectedTabs, style: .destructive) { [weak self] _ in
+                guard let self else { return }
+                TabGroupsTabActions(controller: controller, tabManager: tabManager).closeTabs(tabs)
+                self.refreshTabGroupsUI()
             })
             present(alert, animated: true)
         case .ungroup:
@@ -361,17 +422,17 @@ extension TabTrayViewController {
             navigationHandler?.showTabSettings()
         }
     }
-
 }
 
 private final class TabGroupsSelectionBackdropView: UIVisualEffectView {
+    private static let fadeMidpoint: NSNumber = 0.45
     private let fadeMask = CAGradientLayer()
 
     init() {
         super.init(effect: UIBlurEffect(style: .systemMaterial))
         isUserInteractionEnabled = false
         fadeMask.colors = [UIColor.clear.cgColor, UIColor.white.cgColor, UIColor.white.cgColor]
-        fadeMask.locations = [0, 0.45, 1]
+        fadeMask.locations = [0, Self.fadeMidpoint, 1]
         layer.mask = fadeMask
     }
 
@@ -382,5 +443,45 @@ private final class TabGroupsSelectionBackdropView: UIVisualEffectView {
     override func layoutSubviews() {
         super.layoutSubviews()
         fadeMask.frame = bounds
+    }
+}
+
+@MainActor
+struct TabGroupsTabActions {
+    let controller: TabGroupsController
+    let tabManager: TabManager
+
+    func closeTabs(_ tabs: [Tab]) {
+        guard !tabs.isEmpty else { return }
+        let selectedTabID = tabManager.selectedTab?.tabUUID
+        tabManager.removeTabs(tabs)
+        let normalIDs = tabManager.normalTabs.map(\.tabUUID)
+        controller.reconcile(normalTabIDs: normalIDs)
+        let visibleIDs = controller.visibleTabIDs(normalTabIDs: normalIDs)
+        let preferredID = selectedTabID.flatMap { visibleIDs.contains($0) ? $0 : nil }
+            ?? controller.preferredTabID(normalTabIDs: normalIDs)
+        if let preferredID, let tab = tabManager.getTabForUUID(uuid: preferredID) {
+            tabManager.selectTab(tab)
+            controller.recordSelectedTab(preferredID, normalTabIDs: normalIDs)
+        } else {
+            let tab = tabManager.addTab(nil, isPrivate: false)
+            controller.assignTab(tab.tabUUID,
+                                 to: controller.state.selectedGroupID,
+                                 normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+            tabManager.selectTab(tab)
+            controller.recordSelectedTab(tab.tabUUID, normalTabIDs: tabManager.normalTabs.map(\.tabUUID))
+        }
+    }
+
+    func moveTab(_ tabID: TabUUID, to groupID: UUID?) {
+        let normalIDs = tabManager.normalTabs.map(\.tabUUID)
+        if tabManager.selectedTab?.tabUUID == tabID {
+            controller.moveTabs([tabID], to: groupID, normalTabIDs: normalIDs)
+            if let tab = tabManager.getTabForUUID(uuid: tabID) {
+                tabManager.selectTab(tab)
+            }
+        } else {
+            controller.assignTab(tabID, to: groupID, normalTabIDs: normalIDs)
+        }
     }
 }

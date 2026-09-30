@@ -8,6 +8,8 @@ enum TabGroupsTrayBarMetrics {
     static let topHeight: CGFloat = 48
     static let bottomHeight: CGFloat = 56
     static let buttonSize: CGFloat = 40
+    static let contentSpacing: CGFloat = 8
+    static let groupTintOpacity = 0.18
 }
 
 struct TabGroupsTrayBarViewModel: Equatable {
@@ -33,7 +35,6 @@ struct TabGroupsTrayBarViewModel: Equatable {
 
     let destinationTitle: String
     let isGroupSelected: Bool
-    let tabCount: Int
     let selectedPanel: Panel
     let privateTitle: String
     let syncedTitle: String
@@ -50,8 +51,6 @@ struct TabGroupsTrayBarViewModel: Equatable {
     var groupEmoji: String?
     var groupColor: Color?
     var selectedTabCount: Int?
-
-    var tabsTitle: String { tabCountTitle }
 }
 
 enum TabGroupsTrayBarAction: Equatable {

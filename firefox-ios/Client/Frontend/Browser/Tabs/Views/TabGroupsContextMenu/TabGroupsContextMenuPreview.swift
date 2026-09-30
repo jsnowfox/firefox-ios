@@ -11,7 +11,6 @@ private struct TabGroupsContextMenuPreviewHost: View {
         let barModel = TabGroupsTrayBarViewModel(
             destinationTitle: showsGroupActions ? "Houses" : "Mobile",
             isGroupSelected: showsGroupActions,
-            tabCount: 1,
             selectedPanel: .tabs,
             privateTitle: "Private",
             syncedTitle: "Sync",

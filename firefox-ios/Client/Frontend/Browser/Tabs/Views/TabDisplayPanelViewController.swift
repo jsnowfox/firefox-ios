@@ -288,7 +288,8 @@ final class TabDisplayPanelViewController: UIViewController,
 
     private func updateInsets() {
         if TabGroupsFeatureFlag.isEnabled, tabGroupsController != nil, panelType == .tabs {
-            tabDisplayView.updateInsets(top: 48, bottom: 64)
+            let bottomInset = TabGroupsTrayBarMetrics.bottomHeight + TabGroupsTrayBarMetrics.contentSpacing
+            tabDisplayView.updateInsets(top: TabGroupsTrayBarMetrics.topHeight, bottom: bottomInset)
             return
         }
         if isCompactLayout {

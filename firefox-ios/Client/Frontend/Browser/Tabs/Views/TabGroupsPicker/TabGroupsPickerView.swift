@@ -45,10 +45,9 @@ struct TabGroupsPickerView: View {
             .padding(.top, 16)
             .padding(.bottom, 24)
             .frame(maxWidth: UX.width)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: UX.sheetRadius))
-            .shadow(color: .black.opacity(0.18), radius: 35, y: 15)
             .frame(maxWidth: .infinity)
         }
+        .background(viewModel.colors.background)
         .environment(\.editMode, $editMode)
     }
 

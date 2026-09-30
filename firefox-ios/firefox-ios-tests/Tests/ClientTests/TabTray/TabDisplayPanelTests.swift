@@ -51,6 +51,27 @@ final class TabDisplayPanelTests: XCTestCase {
         XCTAssertEqual(subject.tabDisplayView.tabsState.tabs.map(\.tabUUID), ["a"])
     }
 
+    @MainActor
+    func testGroupScrollTargetUsesVisibleIndex() {
+        let delegate = MockTabDisplayViewDragAndDropInteraction()
+        let subject = TabDisplayPanelViewController(isPrivateMode: false,
+                                                    windowUUID: .XCTestDefaultUUID,
+                                                    dragAndDropDelegate: delegate)
+        let controller = TabGroupsController()
+        controller.createGroup(name: "Work", tabIDs: ["b", "d"], normalTabIDs: ["a", "b", "c", "d"])
+        subject.tabGroupsController = controller
+        let state = TabsPanelState(windowUUID: .XCTestDefaultUUID, isPrivateMode: false)
+            .copy(tabs: [TabModel.emptyState(tabUUID: "a", title: "A"),
+                         TabModel.emptyState(tabUUID: "b", title: "B"),
+                         TabModel.emptyState(tabUUID: "c", title: "C"),
+                         TabModel.emptyState(tabUUID: "d", title: "D")])
+        subject.newState(state: state)
+
+        XCTAssertEqual(subject.tabDisplayView.translatedScrollState(.init(toIndex: 3, withAnimation: false)),
+                       .init(toIndex: 1, withAnimation: false))
+        XCTAssertNil(subject.tabDisplayView.translatedScrollState(.init(toIndex: 0, withAnimation: false)))
+    }
+
     // MARK: - Private
     @MainActor
     private func createSubject(isPrivateMode: Bool,
