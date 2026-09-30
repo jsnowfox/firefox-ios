@@ -19,8 +19,8 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
 
     var body: some View {
         ZStack {
-            if let selectedTabCount = viewModel.selectedTabCount {
-                selectionHeader(selectedTabCount)
+            if viewModel.selectedTabCount != nil {
+                selectionHeader
             } else {
                 HStack {
                     Spacer()
@@ -32,7 +32,7 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
         .padding(.horizontal, 20)
         .frame(height: TabGroupsTrayBarMetrics.topHeight)
     }
-    private func selectionHeader(_ count: Int) -> some View {
+    private var selectionHeader: some View {
         ZStack {
             HStack {
                 Spacer()
@@ -51,11 +51,11 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
                         .accessibilityHidden(true)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Done selecting tabs")
+                .accessibilityLabel(viewModel.finishSelectionAccessibilityLabel)
                 .accessibilityIdentifier("tabGroupsTray.finishSelection")
             }
 
-            Text(count == 0 ? "Select Tabs" : "\(count) Selected")
+            Text(viewModel.selectionTitle)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(viewModel.colors.primaryText)
         }
@@ -98,7 +98,6 @@ struct TabGroupsTrayTopBar<MoreControl: View>: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("tabGroupsTray.destination")
     }
-
 }
 
 extension TabGroupsTrayTopBar where MoreControl == TabGroupsTrayMoreButton {
@@ -152,17 +151,17 @@ struct TabGroupsTrayBottomBar: View {
             if let selectedTabCount = viewModel.selectedTabCount {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        selectionButton("New Group",
+                        selectionButton(viewModel.newGroupTitle,
                                         systemImage: "folder.badge.plus",
                                         action: .createGroupFromSelection,
                                         identifier: "createGroupFromSelection",
                                         selectedTabCount: selectedTabCount)
-                        selectionButton("Move to Group",
+                        selectionButton(viewModel.moveToGroupTitle,
                                         systemImage: "folder",
                                         action: .moveSelectionToGroup,
                                         identifier: "moveSelectionToGroup",
                                         selectedTabCount: selectedTabCount)
-                        selectionButton("Close Tabs",
+                        selectionButton(viewModel.closeSelectedTabsTitle,
                                         systemImage: "xmark.rectangle",
                                         action: .closeSelectedTabs,
                                         identifier: "closeSelectedTabs",
@@ -191,7 +190,7 @@ struct TabGroupsTrayBottomBar: View {
         } label: {
             Label(title, systemImage: systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(role == .destructive ? Color(uiColor: .systemRed) : Color(uiColor: .label))
+                .foregroundStyle(role == .destructive ? viewModel.colors.destructive : viewModel.colors.primaryText)
                 .padding(.horizontal, 16)
                 .frame(height: 40)
                 .tabGroupsGlass(in: Capsule())

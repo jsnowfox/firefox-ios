@@ -9666,6 +9666,41 @@ extension String {
             tableName: "TabsTray",
             value: "Title",
             comment: "Menu item that sorts tabs in a group by title")
+        public static let SelectTabs = MZLocalizedString(
+            key: "TabGroups.SelectTabs.v158",
+            tableName: "TabsTray",
+            value: "Select Tabs",
+            comment: "Title shown when selecting tabs, before any tabs are selected")
+        public static let SelectedTabCountOne = MZLocalizedString(
+            key: "TabGroups.SelectedTabCount.One.v158",
+            tableName: "TabsTray",
+            value: "%d Selected",
+            comment: "Title when exactly one tab is selected; %d is the number of selected tabs")
+        public static let SelectedTabCountOther = MZLocalizedString(
+            key: "TabGroups.SelectedTabCount.Other.v158",
+            tableName: "TabsTray",
+            value: "%d Selected",
+            comment: "Title when multiple tabs are selected; %d is the number of selected tabs")
+        public static let FinishSelection = MZLocalizedString(
+            key: "TabGroups.FinishSelection.v158",
+            tableName: "TabsTray",
+            value: "Done selecting tabs",
+            comment: "Accessibility label for leaving tab selection mode")
+        public static let NewGroup = MZLocalizedString(
+            key: "TabGroups.NewGroup.v158",
+            tableName: "TabsTray",
+            value: "New Group",
+            comment: "Action to create a group from selected tabs")
+        public static let MoveToGroup = MZLocalizedString(
+            key: "TabGroups.MoveToGroup.v158",
+            tableName: "TabsTray",
+            value: "Move to Group",
+            comment: "Action to move selected tabs to another group")
+        public static let CloseSelectedTabs = MZLocalizedString(
+            key: "TabGroups.CloseSelectedTabs.v158",
+            tableName: "TabsTray",
+            value: "Close Tabs",
+            comment: "Action to close selected tabs")
     }
 }
 

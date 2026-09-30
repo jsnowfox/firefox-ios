@@ -28,6 +28,11 @@ private struct TabGroupsTrayBarPreviewHost: View {
             moreAccessibilityLabel: "More tab options",
             addTabAccessibilityLabel: "New tab",
             tabCountTitle: "\(tabCount) \(tabCount == 1 ? "Tab" : "Tabs")",
+            selectionTitle: "Select Tabs",
+            finishSelectionAccessibilityLabel: "Done selecting tabs",
+            newGroupTitle: "New Group",
+            moveToGroupTitle: "Move to Group",
+            closeSelectedTabsTitle: "Close Tabs",
             groupEmoji: isGroupSelected ? "🏠" : nil,
             groupColor: isGroupSelected ? Color(red: 0.96, green: 0.38, blue: 0.16) : nil,
             selectedTabCount: selectedTabCount

@@ -18,7 +18,12 @@ private struct TabGroupsContextMenuPreviewHost: View {
             doneAccessibilityLabel: "Done",
             moreAccessibilityLabel: "More tab options",
             addTabAccessibilityLabel: "New tab",
-            tabCountTitle: "1 Tab"
+            tabCountTitle: "1 Tab",
+            selectionTitle: "Select Tabs",
+            finishSelectionAccessibilityLabel: "Done selecting tabs",
+            newGroupTitle: "New Group",
+            moveToGroupTitle: "Move to Group",
+            closeSelectedTabsTitle: "Close Tabs"
         )
         let menuModel = TabGroupsContextMenuViewModel(
             showsGroupActions: showsGroupActions,

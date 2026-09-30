@@ -16,11 +16,13 @@ struct TabGroupsTrayBarViewModel: Equatable {
         let selectedPanelBackground: Color
         let emphasis: Color
         let onEmphasis: Color
+        let destructive: Color
 
         static let system = Colors(primaryText: Color(uiColor: .label),
                                    selectedPanelBackground: Color(uiColor: .secondarySystemGroupedBackground),
                                    emphasis: Color(uiColor: .label),
-                                   onEmphasis: Color(uiColor: .systemBackground))
+                                   onEmphasis: Color(uiColor: .systemBackground),
+                                   destructive: Color(uiColor: .systemRed))
     }
 
     enum Panel: Equatable {
@@ -39,6 +41,11 @@ struct TabGroupsTrayBarViewModel: Equatable {
     let moreAccessibilityLabel: String
     let addTabAccessibilityLabel: String
     let tabCountTitle: String
+    let selectionTitle: String
+    let finishSelectionAccessibilityLabel: String
+    let newGroupTitle: String
+    let moveToGroupTitle: String
+    let closeSelectedTabsTitle: String
     var colors: Colors = .system
     var groupEmoji: String?
     var groupColor: Color?
