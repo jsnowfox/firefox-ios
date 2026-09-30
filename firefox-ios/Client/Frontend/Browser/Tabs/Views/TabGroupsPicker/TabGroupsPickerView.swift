@@ -13,6 +13,7 @@ struct TabGroupsPickerView: View {
         static let rowHorizontalPadding: CGFloat = 24
         static let sectionSpacing: CGFloat = 20
         static let rowHeight: CGFloat = 52
+        static let maxVisibleRows = 5
         static let iconWidth: CGFloat = 22
         static let iconSpacing: CGFloat = 16
     }
@@ -33,19 +34,22 @@ struct TabGroupsPickerView: View {
     @State private var editMode: EditMode = .inactive
 
     var body: some View {
-        VStack(spacing: UX.sectionSpacing) {
-            header
-            destinationCard
-            destinationRow(viewModel.privateDestination)
-                .background(cardBackground, in: Capsule())
-            creationCard
+        ScrollView {
+            VStack(spacing: UX.sectionSpacing) {
+                header
+                destinationCard
+                destinationRow(viewModel.privateDestination)
+                    .background(viewModel.colors.cardBackground, in: Capsule())
+                creationCard
+            }
+            .padding(.horizontal, UX.horizontalPadding)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+            .frame(maxWidth: UX.width)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: UX.sheetRadius))
+            .shadow(color: .black.opacity(0.18), radius: 35, y: 15)
+            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, UX.horizontalPadding)
-        .padding(.top, 16)
-        .padding(.bottom, 24)
-        .frame(maxWidth: UX.width)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: UX.sheetRadius))
-        .shadow(color: .black.opacity(0.18), radius: 35, y: 15)
         .environment(\.editMode, $editMode)
     }
 
@@ -54,10 +58,10 @@ struct TabGroupsPickerView: View {
             HStack {
                 EditButton()
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(primaryText)
+                    .foregroundStyle(viewModel.colors.primaryText)
                     .padding(.horizontal, 16)
                     .frame(height: 44)
-                    .background(cardBackground.opacity(0.85), in: Capsule())
+                    .background(viewModel.colors.cardBackground.opacity(0.85), in: Capsule())
                     .accessibilityIdentifier("tabGroupsPicker.edit")
 
                 Spacer()
@@ -67,9 +71,9 @@ struct TabGroupsPickerView: View {
                 } label: {
                     Image(systemName: "checkmark")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .systemBackground))
+                        .foregroundStyle(viewModel.colors.onEmphasis)
                         .frame(width: 44, height: 44)
-                        .background(primaryText, in: Circle())
+                        .background(viewModel.colors.primaryText, in: Circle())
                 }
                 .accessibilityLabel(viewModel.doneAccessibilityLabel)
                 .accessibilityIdentifier("tabGroupsPicker.done")
@@ -77,7 +81,7 @@ struct TabGroupsPickerView: View {
 
             Text(viewModel.title)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(primaryText)
+                .foregroundStyle(viewModel.colors.primaryText)
                 .allowsHitTesting(false)
         }
         .frame(height: 44)
@@ -85,8 +89,8 @@ struct TabGroupsPickerView: View {
 
     private var destinationCard: some View {
         destinationList
-            .frame(height: CGFloat(viewModel.destinations.count) * UX.rowHeight)
-            .background(cardBackground, in: RoundedRectangle(cornerRadius: UX.cardRadius))
+            .frame(height: CGFloat(min(viewModel.destinations.count, UX.maxVisibleRows)) * UX.rowHeight)
+            .background(viewModel.colors.cardBackground, in: RoundedRectangle(cornerRadius: UX.cardRadius))
             .clipShape(RoundedRectangle(cornerRadius: UX.cardRadius))
     }
 
@@ -95,7 +99,6 @@ struct TabGroupsPickerView: View {
         if #available(iOS 16.0, *) {
             editableList
                 .scrollContentBackground(.hidden)
-                .scrollDisabled(true)
         } else {
             editableList
         }
@@ -106,14 +109,14 @@ struct TabGroupsPickerView: View {
             ForEach(viewModel.destinations.filter { $0.kind == .device }) { destination in
                 destinationRow(destination, showsDivider: destination.id != viewModel.destinations.last?.id)
                     .listRowInsets(EdgeInsets())
-                    .listRowBackground(cardBackground)
+                    .listRowBackground(viewModel.colors.cardBackground)
                     .listRowSeparator(.hidden)
             }
 
             ForEach(groupDestinations) { destination in
                 destinationRow(destination, showsDivider: destination.id != viewModel.destinations.last?.id)
                     .listRowInsets(EdgeInsets())
-                    .listRowBackground(cardBackground)
+                    .listRowBackground(viewModel.colors.cardBackground)
                     .listRowSeparator(.hidden)
             }
             .onDelete { offsets in
@@ -153,10 +156,10 @@ struct TabGroupsPickerView: View {
                 if destination.id == viewModel.selectedDestinationID {
                     Image(systemName: "checkmark")
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundStyle(Color(red: 0.43, green: 0.39, blue: 0.78))
+                        .foregroundStyle(viewModel.colors.accent)
                 }
             }
-            .foregroundStyle(primaryText)
+            .foregroundStyle(viewModel.colors.primaryText)
             .padding(.horizontal, UX.rowHorizontalPadding)
             .frame(height: UX.rowHeight)
             .contentShape(Rectangle())
@@ -203,7 +206,7 @@ struct TabGroupsPickerView: View {
                     .accessibilityIdentifier("tabGroupsPicker.createWithTabs")
             }
         }
-        .background(cardBackground, in: RoundedRectangle(cornerRadius: UX.cardRadius))
+        .background(viewModel.colors.cardBackground, in: RoundedRectangle(cornerRadius: UX.cardRadius))
     }
 
     private func creationRow(_ title: String, action: TabGroupsPickerAction) -> some View {
@@ -218,19 +221,11 @@ struct TabGroupsPickerView: View {
                     .font(.system(size: 17))
                 Spacer(minLength: 0)
             }
-            .foregroundStyle(primaryText)
+            .foregroundStyle(viewModel.colors.primaryText)
             .padding(.horizontal, UX.rowHorizontalPadding)
             .frame(height: UX.rowHeight)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-
-    private var cardBackground: Color {
-        Color(uiColor: .secondarySystemGroupedBackground)
-    }
-
-    private var primaryText: Color {
-        Color(uiColor: .label)
     }
 }

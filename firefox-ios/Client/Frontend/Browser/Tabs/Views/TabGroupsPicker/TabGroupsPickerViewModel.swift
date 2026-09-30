@@ -2,9 +2,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-import Foundation
+import SwiftUI
 
 struct TabGroupsPickerViewModel: Equatable {
+    struct Colors: Equatable {
+        let background: Color
+        let cardBackground: Color
+        let primaryText: Color
+        let accent: Color
+        let onEmphasis: Color
+
+        static let system = Colors(background: Color(uiColor: .systemGroupedBackground),
+                                   cardBackground: Color(uiColor: .secondarySystemGroupedBackground),
+                                   primaryText: Color(uiColor: .label),
+                                   accent: .accentColor,
+                                   onEmphasis: Color(uiColor: .systemBackground))
+    }
+
     struct Destination: Equatable, Identifiable {
         enum Kind: Equatable {
             case device
@@ -18,6 +32,7 @@ struct TabGroupsPickerViewModel: Equatable {
     }
 
     let title: String
+    let colors: Colors
     let doneAccessibilityLabel: String
     let destinations: [Destination]
     let privateDestination: Destination

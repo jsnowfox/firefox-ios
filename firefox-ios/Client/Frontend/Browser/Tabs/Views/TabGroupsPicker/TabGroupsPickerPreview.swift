@@ -7,15 +7,20 @@ import SwiftUI
 private struct TabGroupsPickerPreviewHost: View {
     @State private var selectedDestinationID: String
     let selectedTabCount: Int
-    @State private var destinations: [TabGroupsPickerViewModel.Destination] = [
+    private static let defaultDestinations: [TabGroupsPickerViewModel.Destination] = [
         .init(id: "mobile", title: "Mobile", kind: .device),
         .init(id: "homes", title: "Homes", kind: .group),
         .init(id: "pet-stuff", title: "Pet Stuff", kind: .group),
         .init(id: "project-ideas", title: "Project Ideas", kind: .group)
     ]
 
-    init(selectedDestinationID: String = "mobile", selectedTabCount: Int = 3) {
+    @State private var destinations: [TabGroupsPickerViewModel.Destination]
+
+    init(selectedDestinationID: String = "mobile", selectedTabCount: Int = 3, additionalGroupCount: Int = 0) {
         _selectedDestinationID = State(initialValue: selectedDestinationID)
+        _destinations = State(initialValue: Self.defaultDestinations + (0..<additionalGroupCount).map { index in
+            .init(id: "group-\(index)", title: "Group \(index + 1)", kind: .group)
+        })
         self.selectedTabCount = selectedTabCount
     }
 
@@ -23,6 +28,7 @@ private struct TabGroupsPickerPreviewHost: View {
         TabGroupsPickerView(
             viewModel: TabGroupsPickerViewModel(
                 title: "Tab Groups",
+                colors: .system,
                 doneAccessibilityLabel: "Done",
                 destinations: destinations,
                 privateDestination: .init(id: "private", title: "Private", kind: .privateTabs),
@@ -36,7 +42,7 @@ private struct TabGroupsPickerPreviewHost: View {
         )
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(TabGroupsPickerViewModel.Colors.system.background)
     }
     private func handle(_ action: TabGroupsPickerAction) {
         switch action {
@@ -55,7 +61,6 @@ private struct TabGroupsPickerPreviewHost: View {
             break
         }
     }
-
 }
 
 #Preview("Mobile selected") {
@@ -73,4 +78,9 @@ private struct TabGroupsPickerPreviewHost: View {
 #Preview("Dark") {
     TabGroupsPickerPreviewHost()
         .preferredColorScheme(.dark)
+}
+
+#Preview("Many groups in compact sheet") {
+    TabGroupsPickerPreviewHost(additionalGroupCount: 10)
+        .frame(height: 400)
 }
