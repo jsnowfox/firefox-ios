@@ -15,7 +15,10 @@ private struct TabGroupsContextMenuPreviewHost: View {
             selectedPanel: .tabs,
             privateTitle: "Private",
             syncedTitle: "Sync",
-            doneAccessibilityLabel: "Done"
+            doneAccessibilityLabel: "Done",
+            moreAccessibilityLabel: "More tab options",
+            addTabAccessibilityLabel: "New tab",
+            tabCountTitle: "1 Tab"
         )
         let menuModel = TabGroupsContextMenuViewModel(
             showsGroupActions: showsGroupActions,
@@ -24,7 +27,10 @@ private struct TabGroupsContextMenuPreviewHost: View {
             customizeGroupTitle: "Customize Group",
             closeTabsTitle: "Close Tabs",
             ungroupTitle: "Ungroup",
-            tabSettingsTitle: "Tab Settings"
+            tabSettingsTitle: "Tab Settings",
+            originalOrderTitle: "Original Order",
+            titleOrderTitle: "Title",
+            moreAccessibilityLabel: "More tab options"
         )
 
         VStack(spacing: 0) {

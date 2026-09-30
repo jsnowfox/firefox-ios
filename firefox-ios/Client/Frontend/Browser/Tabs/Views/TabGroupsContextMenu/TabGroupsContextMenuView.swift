@@ -10,83 +10,89 @@ struct TabGroupsContextMenuView: View {
 
     var body: some View {
         Menu {
-            Button {
-                onAction(.selectTabs)
-            } label: {
-                Label(viewModel.selectTabsTitle, systemImage: "checkmark.rectangle.stack")
-            }
-            .accessibilityIdentifier("tabGroupsContextMenu.selectTabs")
-
-            Menu {
-                Button {
-                    onAction(.arrangeTabsByOriginalOrder)
-                } label: {
-                    Label("Original Order", systemImage: viewModel.sortsByTitle ? "line.3.horizontal" : "checkmark")
-                }
-                Button {
-                    onAction(.arrangeTabsByTitle)
-                } label: {
-                    Label("Title", systemImage: viewModel.sortsByTitle ? "checkmark" : "textformat")
-                }
-            } label: {
-                Label(viewModel.arrangeTabsTitle, systemImage: "square.grid.2x2")
-            }
-            .accessibilityIdentifier("tabGroupsContextMenu.arrangeTabs")
-
-            if viewModel.showsGroupActions {
-                Button {
-                    onAction(.customizeGroup)
-                } label: {
-                    Label(viewModel.customizeGroupTitle, systemImage: "square.and.pencil")
-                }
-                .accessibilityIdentifier("tabGroupsContextMenu.customizeGroup")
-            }
-
+            selectTabsButton
+            arrangeMenu
+            customizeGroupButton
             Divider()
-
-            Button(role: .destructive) {
-                onAction(.closeTabs)
-            } label: {
-                Label(viewModel.closeTabsTitle, systemImage: "xmark.square")
-            }
-            .accessibilityIdentifier("tabGroupsContextMenu.closeTabs")
-
-            if viewModel.showsGroupActions {
-                Button(role: .destructive) {
-                    onAction(.ungroup)
-                } label: {
-                    Label(viewModel.ungroupTitle, systemImage: "square.on.square.dashed")
-                }
-                .accessibilityIdentifier("tabGroupsContextMenu.ungroup")
-            }
-
+            closeTabsButton
+            ungroupButton
             Divider()
-
-            Button {
-                onAction(.tabSettings)
-            } label: {
-                Label(viewModel.tabSettingsTitle, systemImage: "gearshape")
-            }
-            .accessibilityIdentifier("tabGroupsContextMenu.tabSettings")
+            settingsButton
         } label: {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 19, weight: .semibold))
-                .foregroundStyle(Color(uiColor: .label))
-                .frame(width: 40, height: 40)
-                .glassMenuLabel()
+            TabGroupsMoreControlLabel(color: viewModel.colors.primaryText)
         }
-        .accessibilityLabel("More tab options")
+        .accessibilityLabel(viewModel.moreAccessibilityLabel)
         .accessibilityIdentifier("tabGroupsTray.more")
     }
-}
 
-private extension View {
-    @ViewBuilder
-    func glassMenuLabel() -> some View {
-        if #available(iOS 26.0, *) {
-            glassEffect(.regular.interactive(), in: Circle())
-        } else {
-            background(.regularMaterial, in: Circle())
+    private var selectTabsButton: some View {
+        Button {
+            onAction(.selectTabs)
+        } label: {
+            Label(viewModel.selectTabsTitle, systemImage: "checkmark.rectangle.stack")
         }
+        .accessibilityIdentifier("tabGroupsContextMenu.selectTabs")
+    }
+
+    private var arrangeMenu: some View {
+        Menu {
+            Button {
+                onAction(.arrangeTabsByOriginalOrder)
+            } label: {
+                Label(viewModel.originalOrderTitle,
+                      systemImage: viewModel.sortsByTitle ? "line.3.horizontal" : "checkmark")
+            }
+            Button {
+                onAction(.arrangeTabsByTitle)
+            } label: {
+                Label(viewModel.titleOrderTitle,
+                      systemImage: viewModel.sortsByTitle ? "checkmark" : "textformat")
+            }
+        } label: {
+            Label(viewModel.arrangeTabsTitle, systemImage: "square.grid.2x2")
+        }
+        .accessibilityIdentifier("tabGroupsContextMenu.arrangeTabs")
+    }
+
+    @ViewBuilder
+    private var customizeGroupButton: some View {
+        if viewModel.showsGroupActions {
+            Button {
+                onAction(.customizeGroup)
+            } label: {
+                Label(viewModel.customizeGroupTitle, systemImage: "square.and.pencil")
+            }
+            .accessibilityIdentifier("tabGroupsContextMenu.customizeGroup")
+        }
+    }
+
+    private var closeTabsButton: some View {
+        Button(role: .destructive) {
+            onAction(.closeTabs)
+        } label: {
+            Label(viewModel.closeTabsTitle, systemImage: "xmark.square")
+        }
+        .accessibilityIdentifier("tabGroupsContextMenu.closeTabs")
+    }
+
+    @ViewBuilder
+    private var ungroupButton: some View {
+        if viewModel.showsGroupActions {
+            Button(role: .destructive) {
+                onAction(.ungroup)
+            } label: {
+                Label(viewModel.ungroupTitle, systemImage: "square.on.square.dashed")
+            }
+            .accessibilityIdentifier("tabGroupsContextMenu.ungroup")
+        }
+    }
+
+    private var settingsButton: some View {
+        Button {
+            onAction(.tabSettings)
+        } label: {
+            Label(viewModel.tabSettingsTitle, systemImage: "gearshape")
+        }
+        .accessibilityIdentifier("tabGroupsContextMenu.tabSettings")
     }
 }

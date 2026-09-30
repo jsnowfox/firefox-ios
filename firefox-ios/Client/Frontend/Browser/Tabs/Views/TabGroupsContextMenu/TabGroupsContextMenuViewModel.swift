@@ -10,6 +10,10 @@ struct TabGroupsContextMenuViewModel: Equatable {
     let closeTabsTitle: String
     let ungroupTitle: String
     let tabSettingsTitle: String
+    let originalOrderTitle: String
+    let titleOrderTitle: String
+    let moreAccessibilityLabel: String
+    var colors: TabGroupsTrayBarViewModel.Colors = .system
     var sortsByTitle = false
 }
 

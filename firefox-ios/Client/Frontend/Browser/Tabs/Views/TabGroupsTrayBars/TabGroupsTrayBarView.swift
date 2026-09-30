@@ -72,24 +72,40 @@ extension TabGroupsTrayTopBar where MoreControl == TabGroupsTrayMoreButton {
     init(viewModel: TabGroupsTrayBarViewModel,
          onAction: @escaping (TabGroupsTrayBarAction) -> Void) {
         self.init(viewModel: viewModel, onAction: onAction) {
-            TabGroupsTrayMoreButton { onAction(.openMoreMenu) }
+            TabGroupsTrayMoreButton(colors: viewModel.colors, accessibilityLabel: viewModel.moreAccessibilityLabel) {
+                onAction(.openMoreMenu)
+            }
         }
     }
 }
 
+struct TabGroupsMoreControlLabel: View {
+    let color: Color
+
+    var body: some View {
+        Image("moreHorizontalRoundLarge")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 22, height: 22)
+            .foregroundStyle(color)
+            .frame(width: TabGroupsTrayBarMetrics.buttonSize, height: TabGroupsTrayBarMetrics.buttonSize)
+            .tabGroupsGlass(in: Circle())
+            .accessibilityHidden(true)
+    }
+}
+
 struct TabGroupsTrayMoreButton: View {
+    let colors: TabGroupsTrayBarViewModel.Colors
+    let accessibilityLabel: String
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            Image(systemName: "ellipsis")
-                .font(.system(size: 19, weight: .semibold))
-                .foregroundStyle(Color(uiColor: .label))
-                .frame(width: 40, height: 40)
-                .tabGroupsGlass(in: Circle())
+            TabGroupsMoreControlLabel(color: colors.primaryText)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("More tab options")
+        .accessibilityLabel(accessibilityLabel)
         .accessibilityIdentifier("tabGroupsTray.more")
     }
 }

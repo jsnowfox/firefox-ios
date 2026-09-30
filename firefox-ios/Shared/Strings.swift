@@ -9654,4 +9654,19 @@ extension String {
     }
 }
 
+extension String {
+    public struct TabGroups {
+        public static let OriginalOrder = MZLocalizedString(
+            key: "TabGroups.ArrangeTabs.OriginalOrder.v158",
+            tableName: "TabsTray",
+            value: "Original Order",
+            comment: "Menu item that restores the original order of tabs in a group")
+        public static let TitleOrder = MZLocalizedString(
+            key: "TabGroups.ArrangeTabs.Title.v158",
+            tableName: "TabsTray",
+            value: "Title",
+            comment: "Menu item that sorts tabs in a group by title")
+    }
+}
+
 // swiftlint:enable line_length
