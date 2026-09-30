@@ -12,53 +12,70 @@ struct TabGroupsTrayTopBar: View {
         ZStack {
             HStack {
                 Spacer()
-
-                Button {
-                    onAction(.openMoreMenu)
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 19, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .label))
-                        .frame(width: 40, height: 40)
-                        .tabGroupsGlass(in: Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("More tab options")
-                .accessibilityIdentifier("tabGroupsTray.more")
+                moreButton
             }
-
-            Button {
-                onAction(.openDestinationPicker)
-            } label: {
-                HStack(spacing: 7) {
-                    if let emoji = viewModel.groupEmoji, viewModel.isGroupSelected {
-                        Text(emoji)
-                            .font(.system(size: 16))
-                    } else {
-                        Image(systemName: "square.grid.2x2.fill")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(Color(uiColor: .label))
-                    }
-
-                    Text(viewModel.destinationTitle)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .label))
-
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(Color(uiColor: .label))
-                }
-                .padding(.horizontal, 14)
-                .frame(height: 36)
-                .tabGroupsGlass(in: Capsule(), tint: viewModel.isGroupSelected ? viewModel.groupColor : nil)
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("tabGroupsTray.destination")
+            destinationButton
         }
         .padding(.horizontal, 20)
-        .frame(height: 48)
+        .frame(height: TabGroupsTrayBarMetrics.topHeight)
     }
 
+    private var moreButton: some View {
+        Button {
+            onAction(.openMoreMenu)
+        } label: {
+            Image("moreHorizontalRoundLarge")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 22, height: 22)
+                .foregroundStyle(viewModel.colors.primaryText)
+                .frame(width: TabGroupsTrayBarMetrics.buttonSize, height: TabGroupsTrayBarMetrics.buttonSize)
+                .tabGroupsGlass(in: Circle())
+                .accessibilityHidden(true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(viewModel.moreAccessibilityLabel)
+        .accessibilityIdentifier("tabGroupsTray.more")
+    }
+
+    private var destinationButton: some View {
+        Button {
+            onAction(.openDestinationPicker)
+        } label: {
+            HStack(spacing: 7) {
+                if let emoji = viewModel.groupEmoji, viewModel.isGroupSelected {
+                    Text(emoji)
+                        .font(.system(size: 16))
+                } else {
+                    Image("tabTrayLarge")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
+                        .foregroundStyle(viewModel.colors.primaryText)
+                        .accessibilityHidden(true)
+                }
+
+                Text(viewModel.destinationTitle)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(viewModel.colors.primaryText)
+
+                Image("chevronDownLarge")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(viewModel.colors.primaryText)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 36)
+            .tabGroupsGlass(in: Capsule(), tint: viewModel.isGroupSelected ? viewModel.groupColor : nil)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("tabGroupsTray.destination")
+    }
 }
 
 struct TabGroupsTrayBottomBar: View {
@@ -67,46 +84,62 @@ struct TabGroupsTrayBottomBar: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Button {
-                onAction(.addTab)
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 18, weight: .medium))
-                    .frame(width: 40, height: 40)
-                    .tabGroupsGlass(in: Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("New tab")
-            .accessibilityIdentifier("tabGroupsTray.addTab")
-
+            addButton
             Spacer(minLength: 0)
-
-            HStack(spacing: 2) {
-                panelButton(viewModel.privateTitle, panel: .privateTabs)
-                panelButton(viewModel.tabsTitle, panel: .tabs)
-                panelButton(viewModel.syncedTitle, panel: .syncedTabs)
-            }
-            .padding(3)
-            .tabGroupsGlass(in: Capsule())
-
+            panelPicker
             Spacer(minLength: 0)
-
-            Button {
-                onAction(.done)
-            } label: {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color(uiColor: .systemBackground))
-                    .frame(width: 40, height: 40)
-                    .tabGroupsDoneStyle()
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(viewModel.doneAccessibilityLabel)
-            .accessibilityIdentifier("tabGroupsTray.done")
+            doneButton
         }
-        .foregroundStyle(Color(uiColor: .label))
+        .foregroundStyle(viewModel.colors.primaryText)
         .padding(.horizontal, 20)
-        .frame(height: 56)
+        .frame(height: TabGroupsTrayBarMetrics.bottomHeight)
+    }
+
+    private var addButton: some View {
+        Button {
+            onAction(.addTab)
+        } label: {
+            Image("plusLarge")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .frame(width: TabGroupsTrayBarMetrics.buttonSize, height: TabGroupsTrayBarMetrics.buttonSize)
+                .tabGroupsGlass(in: Circle())
+                .accessibilityHidden(true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(viewModel.addTabAccessibilityLabel)
+        .accessibilityIdentifier("tabGroupsTray.addTab")
+    }
+
+    private var panelPicker: some View {
+        HStack(spacing: 2) {
+            panelButton(viewModel.privateTitle, panel: .privateTabs)
+            panelButton(viewModel.tabsTitle, panel: .tabs)
+            panelButton(viewModel.syncedTitle, panel: .syncedTabs)
+        }
+        .padding(3)
+        .tabGroupsGlass(in: Capsule())
+    }
+
+    private var doneButton: some View {
+        Button {
+            onAction(.done)
+        } label: {
+            Image("checkmarkLarge")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .foregroundStyle(viewModel.colors.onEmphasis)
+                .frame(width: TabGroupsTrayBarMetrics.buttonSize, height: TabGroupsTrayBarMetrics.buttonSize)
+                .tabGroupsDoneStyle(tint: viewModel.colors.emphasis)
+                .accessibilityHidden(true)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(viewModel.doneAccessibilityLabel)
+        .accessibilityIdentifier("tabGroupsTray.done")
     }
 
     private func panelButton(_ title: String, panel: TabGroupsTrayBarViewModel.Panel) -> some View {
@@ -120,7 +153,7 @@ struct TabGroupsTrayBottomBar: View {
                 .frame(height: 32)
                 .background {
                     if panel == viewModel.selectedPanel {
-                        Capsule().fill(Color(uiColor: .secondarySystemGroupedBackground))
+                        Capsule().fill(viewModel.colors.selectedPanelBackground)
                     }
                 }
         }
@@ -145,11 +178,11 @@ private extension View {
     }
 
     @ViewBuilder
-    func tabGroupsDoneStyle() -> some View {
+    func tabGroupsDoneStyle(tint: Color) -> some View {
         if #available(iOS 26.0, *) {
-            glassEffect(.regular.tint(.black).interactive(), in: Circle())
+            glassEffect(.regular.tint(tint).interactive(), in: Circle())
         } else {
-            background(Color(uiColor: .label), in: Circle())
+            background(tint, in: Circle())
         }
     }
 }

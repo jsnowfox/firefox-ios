@@ -23,6 +23,9 @@ private struct TabGroupsTrayBarPreviewHost: View {
             privateTitle: "Private",
             syncedTitle: "Sync",
             doneAccessibilityLabel: "Done",
+            moreAccessibilityLabel: "More tab options",
+            addTabAccessibilityLabel: "New tab",
+            tabCountTitle: "\(tabCount) \(tabCount == 1 ? "Tab" : "Tabs")",
             groupEmoji: isGroupSelected ? "🏠" : nil,
             groupColor: isGroupSelected ? Color(red: 0.96, green: 0.38, blue: 0.16) : nil
         )
