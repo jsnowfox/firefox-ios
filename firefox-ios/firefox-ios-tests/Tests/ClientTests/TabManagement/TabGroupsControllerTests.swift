@@ -8,10 +8,10 @@ import XCTest
 
 @MainActor
 final class TabGroupsControllerTests: XCTestCase {
-    func testAssigningTabMovesItBetweenGroupsAndMobile() {
+    func testAssigningTabMovesItBetweenGroupsAndMobile() throws {
         let controller = TabGroupsController()
-        let firstID = controller.createGroup(name: "First", tabIDs: ["a"], normalTabIDs: ["a", "b"])
-        let secondID = controller.createGroup(name: "Second", normalTabIDs: ["a", "b"])
+        let firstID = try XCTUnwrap(controller.createGroup(name: "First", tabIDs: ["a"], normalTabIDs: ["a", "b"]))
+        let secondID = try XCTUnwrap(controller.createGroup(name: "Second", normalTabIDs: ["a", "b"]))
 
         controller.assignTab("a", to: secondID, normalTabIDs: ["a", "b"])
 
@@ -24,9 +24,9 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b"]), ["a", "b"])
     }
 
-    func testDeleteGroupReturnsTabsToMobile() {
+    func testDeleteGroupReturnsTabsToMobile() throws {
         let controller = TabGroupsController()
-        let groupID = controller.createGroup(name: "Work", tabIDs: ["a"], normalTabIDs: ["a", "b"])
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work", tabIDs: ["a"], normalTabIDs: ["a", "b"]))
 
         controller.deleteGroup(id: groupID)
 
@@ -34,10 +34,10 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b"]), ["a", "b"])
     }
 
-    func testMovingSelectedTabsChangesMembershipAndDestinationOnce() {
+    func testMovingSelectedTabsChangesMembershipAndDestinationOnce() throws {
         let controller = TabGroupsController()
-        let firstID = controller.createGroup(name: "First", tabIDs: ["a", "b"], normalTabIDs: ["a", "b", "c"])
-        let secondID = controller.createGroup(name: "Second", normalTabIDs: ["a", "b", "c"])
+        let firstID = try XCTUnwrap(controller.createGroup(name: "First", tabIDs: ["a", "b"], normalTabIDs: ["a", "b", "c"]))
+        let secondID = try XCTUnwrap(controller.createGroup(name: "Second", normalTabIDs: ["a", "b", "c"]))
         controller.selectGroup(id: firstID)
         var changeCount = 0
         controller.onChange = { _ in changeCount += 1 }
@@ -55,11 +55,9 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["a", "b", "c"]), ["a", "c"])
     }
 
-    func testReconcileRemovesClosedTabsAndExcludesPrivateTabs() {
+    func testReconcileRemovesClosedTabsAndExcludesPrivateTabs() throws {
         let controller = TabGroupsController()
-        let groupID = controller.createGroup(name: "Work",
-                                             tabIDs: ["a", "private"],
-                                             normalTabIDs: ["a", "b"])
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work", tabIDs: ["a", "private"], normalTabIDs: ["a", "b"]))
         controller.assignTab("private", to: groupID, normalTabIDs: ["a", "b"])
         controller.reconcile(normalTabIDs: ["b"])
 
@@ -67,9 +65,9 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.visibleTabIDs(normalTabIDs: ["b"]), [])
     }
 
-    func testReorderingGroupsKeepsSelectedGroup() {
+    func testReorderingGroupsKeepsSelectedGroup() throws {
         let controller = TabGroupsController()
-        let firstID = controller.createGroup(name: "First", normalTabIDs: [])
+        let firstID = try XCTUnwrap(controller.createGroup(name: "First", normalTabIDs: []))
         controller.createGroup(name: "Second", normalTabIDs: [])
         controller.createGroup(name: "Third", normalTabIDs: [])
         controller.selectGroup(id: firstID)
@@ -80,12 +78,17 @@ final class TabGroupsControllerTests: XCTestCase {
         XCTAssertEqual(controller.state.selectedGroupID, firstID)
     }
 
-    func testCreatingAndUpdatingGroupAppearance() {
+    func testCreatingGroupRejectsEmptyNameOrEmoji() {
         let controller = TabGroupsController()
-        let groupID = controller.createGroup(name: "Work",
-                                             emoji: "💼",
-                                             color: .blue,
-                                             normalTabIDs: [])
+
+        XCTAssertNil(controller.createGroup(name: "  \n  ", normalTabIDs: ["a"]))
+        XCTAssertNil(controller.createGroup(name: "Valid", emoji: "  ", normalTabIDs: ["a"]))
+        XCTAssertTrue(controller.state.groups.isEmpty)
+    }
+
+    func testCreatingAndUpdatingGroupAppearance() throws {
+        let controller = TabGroupsController()
+        let groupID = try XCTUnwrap(controller.createGroup(name: "Work", emoji: "💼", color: .blue, normalTabIDs: []))
 
         XCTAssertEqual(controller.state.groups[0].emoji, "💼")
         XCTAssertEqual(controller.state.groups[0].color, .blue)

@@ -19,13 +19,16 @@ final class TabGroupsController {
                      emoji: String = "🗂️",
                      color: TabGroupColor = .orange,
                      tabIDs: [TabUUID] = [],
-                     normalTabIDs: [TabUUID]) -> UUID {
+                     normalTabIDs: [TabUUID]) -> UUID? {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEmoji = emoji.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty, !trimmedEmoji.isEmpty else { return nil }
         let id = UUID()
         let validIDs = orderedUnique(tabIDs.filter { normalTabIDs.contains($0) })
         removeMembership(for: validIDs)
         state.groups.append(TabGroup(id: id,
-                                     name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-                                     emoji: emoji,
+                                     name: trimmedName,
+                                     emoji: trimmedEmoji,
                                      color: color,
                                      tabIDs: validIDs,
                                      lastSelectedTabID: validIDs.first))
